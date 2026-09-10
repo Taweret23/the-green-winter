@@ -2,7 +2,7 @@
 
 **An X-Files fanfic mystery.** A single-file parser adventure, playable in any browser.
 
-> Bellwether, Iowa. The extension agent walked into a soybean field and came back
+> Bellwether, Oregon. Pop. 1,200. The extension agent walked into a soybean field and came back
 > fine. Everyone in town is fine. The road east is closing. Scully is four hours
 > out and her last text says DO NOT TOUCH ANYTHING.
 
