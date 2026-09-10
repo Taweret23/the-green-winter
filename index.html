@@ -499,7 +499,8 @@ function waitCmd(){if(S.turned)return say('You wait. She waits better.','sys');
   const need=[];if(!has('rope')&&!S.f.bellRung)need.push('the bell rope');if(!has('crowbar'))need.push('anything to pry with');if(!has('keys'))need.push('Cal\'s keys');
   say('You stand at the window and take stock, the way you do before a door. Pockets: '+(S.inv.length?S.inv.map(i=>ITEMS[i].n).join(', ').toLowerCase():'nothing')+'.'+(need.length?' You notice what you don\'t have: '+need.join(', ')+'. Ada\'s grandfather rang a bell. Ochieng said the pods don\'t open for hands. You could still go back for things. Or you could WAIT again and let the night come.':' You\'ve got what you\'ve got, and it\'s enough to be going on with.'));
   if(S.rooted>=2)say('And something else: you\'ve been sitting down all evening, in a way that has nothing to do with chairs. Whatever helps with that, do it before you go. Or WAIT again and go as you are.');
-  if((need.length||S.rooted>=2)&&!S._warned){S._warned=true;return}
+  const flag=need.join('|')+(S.rooted>=2?'|rooted':'');
+  if(flag&&S._warned!==flag){S._warned=flag;return}
   theTurn()}
 function closeAt(k,note){S._closeRoom[k]=S.room;S._notes[k]=note;if(R[S.room].cl!==k){S._left[k]=true;sys(note);delete S._notes[k]}}
 function checkSpokes(){if(S.turned||S.ended)return;
