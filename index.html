@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Green Winter: An X-Files Fanfic Mystery</title>
+<style>
+  :root{
+    --bg:#050705; --panel:#101410; --panel2:#0a0d0a;
+    --bevel-hi:#5c6a5c; --bevel-lo:#000;
+    --text:#ffffff; --dim:#a9b3a9; --sys:#8f998f;
+    --green:#8cf28a; --red:#c8261a; --amber:#e0b34a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--text);
+    font-family:"Courier New",Courier,"Lucida Console",monospace;font-size:17px;line-height:1.45}
+  body{overflow:hidden}
+  .crt{position:relative;height:100%;display:flex;flex-direction:column;
+    background:radial-gradient(ellipse at center,#0b100b 0%,#050705 70%,#000 100%)}
+  .crt::before{content:"";pointer-events:none;position:absolute;inset:0;z-index:5;
+    background:repeating-linear-gradient(0deg,rgba(0,0,0,.18) 0 1px,transparent 1px 3px)}
+  .crt::after{content:"";pointer-events:none;position:absolute;inset:0;z-index:6;
+    box-shadow:inset 0 0 160px 40px rgba(0,0,0,.85)}
+  @media (prefers-reduced-motion:no-preference){
+    .crt{animation:flicker 7s infinite}
+    @keyframes flicker{0%,97%,100%{opacity:1}98%{opacity:.93}99%{opacity:.98}}
+  }
+  header{display:flex;align-items:baseline;justify-content:space-between;gap:16px;
+    padding:10px 18px 8px;border-bottom:2px solid #000;box-shadow:0 2px 0 var(--bevel-hi);background:var(--panel2)}
+  header h1{margin:0;font-family:"Times New Roman",Times,serif;font-weight:700;font-size:30px;letter-spacing:.32em;
+    text-shadow:0 0 6px rgba(200,38,26,.9),0 0 22px rgba(200,38,26,.45)}
+  header h1 span{color:var(--green);text-shadow:0 0 8px var(--green)}
+  header .sub{color:var(--dim);font-size:13px;letter-spacing:.08em}
+  header .clock{font-size:14px;color:var(--dim);white-space:nowrap}
+  main{flex:1;display:grid;grid-template-columns:1fr 300px;gap:10px;padding:10px;min-height:0}
+  .bevel{background:var(--panel);border:2px solid;border-color:var(--bevel-hi) var(--bevel-lo) var(--bevel-lo) var(--bevel-hi)}
+  .screen{display:flex;flex-direction:column;min-height:0}
+  #log{position:relative;flex:1;overflow-y:auto;padding:16px 20px;scrollbar-width:thin;scrollbar-color:#3a453a #000}
+  #log::after{content:"";display:block;height:85vh}
+  #log p{margin:0 0 .85em;max-width:78ch;white-space:pre-wrap}
+  #log p.room{color:var(--text)}
+  #log p.title{font-weight:700;letter-spacing:.12em;margin-bottom:.4em;text-transform:uppercase}
+  #log p.sys{color:var(--sys)}
+  #log p.you{color:var(--green);margin-top:.4em}
+  #log p.you::before{content:"> "}
+  #log p.opt{color:var(--text);margin:0 0 .25em;cursor:pointer;padding-left:1.2em;text-indent:-1.2em}
+  #log p.opt:hover{color:var(--green)}
+  #log p.opt.off{color:#5c665c;cursor:default}
+  #log p.cut{color:var(--dim);font-style:italic}
+  #log p.exits{color:var(--sys);font-size:15px}
+  #log b{color:#fff;font-weight:700}
+  #log .q{color:#fff}
+  #log p.end{color:var(--amber);font-weight:700;letter-spacing:.1em}
+  .statusline{border-top:2px solid #000;box-shadow:0 -2px 0 var(--bevel-hi) inset;padding:6px 20px;background:#0d110d;color:var(--dim);font-size:14px;letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .statusline b{color:#fff;font-weight:700;letter-spacing:.08em}
+  .statusline .g{color:var(--green)}
+  .prompt{display:flex;align-items:center;gap:8px;border-top:2px solid #000;box-shadow:0 -2px 0 var(--bevel-hi) inset;padding:10px 20px;background:var(--panel2)}
+  .prompt .caret{color:var(--green)}
+  .prompt input{flex:1;background:transparent;border:0;outline:0;color:#fff;font:inherit;font-size:17px;caret-color:var(--green)}
+  .prompt input:focus-visible{outline:1px dashed var(--green);outline-offset:4px}
+  aside{display:flex;flex-direction:column;gap:10px;min-height:0;overflow-y:auto}
+  .box{padding:10px 12px}
+  .box h2{margin:0 0 8px;font-size:13px;letter-spacing:.14em;color:var(--dim);font-weight:400}
+  .verbs{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  button.v{font:inherit;font-size:14px;letter-spacing:.06em;color:#fff;background:#1c231c;padding:7px 6px;cursor:pointer;
+    border:2px solid;border-color:var(--bevel-hi) var(--bevel-lo) var(--bevel-lo) var(--bevel-hi)}
+  button.v:active{border-color:var(--bevel-lo) var(--bevel-hi) var(--bevel-hi) var(--bevel-lo)}
+  button.v:focus-visible{outline:1px dashed var(--green);outline-offset:2px}
+  button.v[disabled]{color:#5c665c;cursor:default}
+  #inv{margin:0;padding:0;list-style:none;font-size:15px}
+  #inv li{padding:2px 0}
+  #inv li small{color:var(--dim)}
+  #map{font-size:13px;line-height:1.5}
+  #map .cl{margin-bottom:6px}
+  #map .cl .n{color:#fff;letter-spacing:.06em}
+  #map .cl .n.drive{cursor:pointer;text-decoration:underline dotted}
+  #map .cl .n.drive:hover{color:var(--green)}
+  #map .cl .n.here{color:var(--green)}
+  #map .rooms{color:#6f7a6f;padding-left:10px}
+  #map .rooms .here{color:#fff}
+  #map .rooms .locked{color:#4a524a}
+  #map.grey{opacity:.35}
+  .status{font-size:14px;color:var(--dim);display:flex;justify-content:space-between}
+  #rooted{display:block}
+  #rooted .bar{display:flex;gap:4px;margin-top:6px}
+  #rooted .bar i{flex:1;height:12px;border:1px solid #444;background:#000}
+  #rooted .bar i.on{background:var(--red);box-shadow:0 0 8px var(--red)}
+  #rooted .lbl{color:var(--red);letter-spacing:.14em;font-size:13px}
+  #rooted .hint{color:#6f7a6f;font-size:12px}
+  .restart-row{display:flex;gap:10px;margin:8px 20px 12px}.restart{display:none;flex:1}
+  @media (max-width:820px){
+    body{overflow:auto}
+    main{grid-template-columns:1fr;grid-template-rows:60vh auto}
+    header h1{font-size:22px}
+  }
+</style>
+</head>
+<body>
+<div class="crt">
+  <header>
+    <div><h1>THE GREEN <span>W</span>INTER</h1><div class="sub">An X-Files Fanfic Mystery</div></div>
+    <div class="clock" id="clock"></div>
+  </header>
+  <main>
+    <section class="screen bevel">
+      <div id="log" aria-live="polite"></div>
+      <div class="restart-row"><button class="v restart" id="restart">Play again</button><button class="v restart" id="crater">Back to the crater</button></div>
+      <div class="statusline" id="statusline"></div>
+      <div class="prompt"><span class="caret">&gt;</span><input id="in" autocomplete="off" spellcheck="false" placeholder="type a command, or pick a verb" aria-label="command"></div>
+    </section>
+    <aside>
+      <div class="box bevel"><h2>Verbs</h2>
+        <div class="verbs" id="verbs"></div></div>
+      <div class="box bevel"><h2>Inventory</h2><ul id="inv"></ul></div>
+      <div class="box bevel"><h2>Map</h2><div id="map"></div></div>
+      <div class="box bevel status"><span id="seedstat"></span><span id="sig"></span></div>
+      <div class="box bevel" id="rooted"><span class="lbl">Rooted</span> <span class="hint">— four and you sit down. Eating a seed helps.</span><div class="bar"><i></i><i></i><i></i><i></i></div></div>
+    </aside>
+  </main>
+</div>
+
+<script>
+/* ===================== ENGINE ===================== */
+const $=s=>document.querySelector(s);
+const log=$('#log'), input=$('#in');
+let queue=[], typing=false, skip=false, anchorY=null, checkpoint=null;
+const fmt=s=>s.replace(/\{([A-Z ]+)\}/g,'<b>$1</b>');
+function say(html,cls='room',onclick){queue.push({html:fmt(html),cls,onclick});pump();}
+function sys(t){say(t,'sys')}
+function cut(t){say(t,'cut')}
+async function pump(){
+  if(typing)return; typing=true;
+  while(queue.length){
+    const {html,cls,onclick}=queue.shift();
+    const p=document.createElement('p');p.className=cls;p.innerHTML=html;
+    if(onclick)p.addEventListener('click',onclick);
+    const nodes=[];(function walk(n){for(const c of n.childNodes){if(c.nodeType===3){nodes.push([c,c.nodeValue]);c.nodeValue=''}else walk(c)}})(p);
+    log.appendChild(p);
+    if(cls==='you')anchorY=Math.max(0,p.offsetTop-14);
+    if(anchorY!=null){log.scrollTop=anchorY;requestAnimationFrame(()=>{log.scrollTop=anchorY})}
+    const fast=cls==='you'||cls==='opt'||skip||matchMedia('(prefers-reduced-motion: reduce)').matches;
+    for(const [n,txt] of nodes){
+      if(fast){n.nodeValue=txt;continue}
+      for(let i=0;i<txt.length;i++){n.nodeValue+=txt[i];if(skip){n.nodeValue=txt;break}
+        if(i%2===0)await new Promise(r=>setTimeout(r,7))}
+    }
+  }
+  typing=false;skip=false;
+}
+log.addEventListener('click',()=>{skip=true});
+
+/* ===================== STATE ===================== */
+let S;
+function fresh(){return{
+  room:'room6', inv:[], ready:false, _closeRoom:{}, _left:{}, _notes:{}, seeds:20, turns:0, rooted:0, mode:'play', opts:[],
+  act:1, closed:{main:false,clinic:false,edge:false,farm:false}, turned:false,
+  f:{}, visits:{}, craterLooks:0, calls:{}, fight:{beat:0,right:0,light:false,proof:0,stood:[]}, ended:false
+}}
+const has=i=>S.inv.includes(i);
+const give=i=>{if(!has(i))S.inv.push(i);ui()};
+const drop=i=>{S.inv=S.inv.filter(x=>x!==i);ui()};
+
+/* ===================== ITEMS ===================== */
+const ITEMS={
+  seeds:{n:'SUNFLOWER SEEDS',d:()=>`A crumpled pouch of sunflower seeds. ${S.seeds>1?'About '+S.seeds+' left.':'One left. You leave it.'} You eat them when you're thinking, which is always.`},
+  crowbar:{n:'CROWBAR',d:()=>'Rusted, heavier than it looks. There is green on the hook end that didn\'t come from the gravel.'},
+  soilkit:{n:'SOIL KIT',d:()=>'A county extension soil test kit. Vials, litmus strips, a laminated chart. Cal\'s initials on the case.'},
+  solvent:{n:'SOLVENT',d:()=>'A brown bottle from Mrs. Ochieng. The label says PAINT STRIPPER in marker and then, smaller, "sorry."'},
+  photograph:{n:'PHOTOGRAPH',d:()=>S.f.mural?'1934. A burning field. A man standing in the smoke, arms at his sides. Behind him, a second man hauling on a bell rope. You thought it was an alarm. Look at the sky in the picture: it\'s full of birds.':'1934. A burning field. A man standing in the smoke, arms at his sides. Behind him, a second man hauling on a rope. An alarm, you figure.'},
+  keys:{n:'KEYS',d:()=>'Cal Rasmussen\'s truck keys on a county lanyard. He handed them over like he was passing the salt.'},
+  rope:{n:'ROPE',d:()=>'The bell rope from the vestry, coiled. Older than the pastor. Older than the church, maybe.'},
+  lighter:{n:'LIGHTER',d:()=>'A Zippo with a dent. Pastor Halvorsen said he doesn\'t need it anymore. He said it very kindly.'},
+  salt:{n:'ROAD SALT',d:()=>'A forty-pound sack of public works road salt. The paper is damp at one corner.'},
+  sample:{n:'POD',d:()=>'One pod in a freezer bag, gloved. It\'s warm through the plastic. You keep checking that it hasn\'t opened.'},
+};
+const ALIAS={seeds:'seeds',hands:'hands',sample:'sample','live pod':'sample','pod sample':'sample','soil kit':'soilkit',kit:'soilkit',photo:'photograph',picture:'photograph','road salt':'salt',pod:'sample','seed':'seeds','sunflower seeds':'seeds','key':'keys','truck keys':'keys'};
+function itemId(w){w=w.toLowerCase().trim();if(ALIAS[w])return ALIAS[w];for(const k in ITEMS)if(k===w||ITEMS[k].n.toLowerCase()===w)return k;return null}
+
+/* ===================== ROOMS ===================== */
+const R={};
+const CL={hub:'Motor Lodge',main:'Main Street',clinic:'Doc Amory\'s Clinic',edge:'Edge of Town',farm:'Halloran Farm'};
+const ENTRY={hub:'parkinglot',main:'townhall',clinic:'waiting',edge:'greenhouse',farm:'farmhouse'};
+const spokes=()=>Object.values(S.closed).filter(Boolean).length;
+
+R.room6={name:'Room 6, Bellwether Motor Lodge',cl:'hub',items:['seeds'],
+ d:()=>`A bed that's seen worse, a lamp that's seen nothing, and a laminated map of Bellwether on the wall you've already started sticking pins into. Your jacket's on the chair.${has('seeds')?'':' A pouch of {SUNFLOWER SEEDS} is on the bed where it fell out of the pocket, because there are always seeds in the pocket.'}${S.turned?'':' Scully\'s last text is still on your phone: DO NOT TOUCH ANYTHING.'}`,
+ look:{map:()=>'Five places worth pinning: Main Street, the clinic, the edge of town, the Halloran farm, and this lot. Somebody has drawn a small circle around the farm in pencil. It wasn\'t you.',bed:'Made. You haven\'t used it. You\'re not going to.',phone:()=>'Bars: none. The motel is a hole. Something high up would help.',jacket:()=>has('seeds')?'Government issue. Seeds back in the pocket.':'Government issue. The pocket\'s empty. The seeds are on the bed.'},
+ exits:{south:'parkinglot'}};
+R.parkinglot={name:'Parking Lot',cl:'hub',car:true,
+ d:()=>`Your rental sits under the one working light. A vending machine hums by the office door. It\'s out of everything except, somehow, sunflower seeds, and it never seems to run out of those. The night is very quiet and smells faintly of cut grass, though nobody\'s been cutting.`,
+ look:{machine:()=>'Coils and coils of nothing, and one row of sunflower seeds at $1.25. It\'s full. It was full last time.',car:'The rental. It\'ll take you to any of the five places: Main Street, the clinic, the edge of town, the Halloran farm, or back here. GO [place].',light:'Moths.'},
+ use:{machine:()=>{S.f.vend=(S.f.vend||0)+1;S.seeds+=12;const l=['You feed it a dollar and a quarter. The coil turns for a long, dramatic time. Sunflower seeds drop. Of course they do.','Another dollar twenty-five. Another pouch. The row behind it is full again. You don\'t look too closely.','It hums. You pay. Seeds.','It hums. You pay. Seeds.'];return l[Math.min(S.f.vend-1,3)]}},
+ exits:{north:'room6',east:'office',south:'roadblock'}};
+R.office={name:'Motel Office',cl:'hub',
+ d:()=>`Wood paneling, a rack of brochures for things that closed in the eighties, ${here('denise')?'and Denise behind the counter with a crossword she isn\'t doing. ':'and nobody behind the counter. The crossword is on it, four across still blank.'}${!here('denise')?'':spokes()>=3?'She\'s looking at the window instead. She\'s smiling at it.':'She looks up like you\'re the best thing that\'s happened all week, which in Bellwether you might be.'}`,
+ chars:['denise'],look:{brochures:'"VISIT THE BELLWETHER GRAIN ELEVATOR — TALLEST THING FOR 20 MILES."',crossword:'Four across: "Take root (6)." She hasn\'t filled it in.'},
+ exits:{west:'parkinglot'}};
+R.roadblock={name:'County Road East',cl:'hub',
+ d:()=>{const n=spokes();const v=['Vines lie across the county road like somebody dropped a green hose. A cruiser is parked sideways beyond them, lights off.','The vines across the road are ankle-deep now and lacing together. The cruiser beyond them hasn\'t moved.','The road east is a hedge. Green, waist-high, slowly breathing. You can just see the cruiser\'s roof.','The road east is gone. There is only green, higher than your head, and somewhere inside it a cruiser, and inside that, Deputy Pruitt, waiting.'][Math.min(n,3)];
+   return v+' This is the way Scully would come.'},
+ chars:['pruitt'],look:{vines:()=>'Thick, green, warm-looking. You reach a hand out and then, wisely, put it in your pocket.',cruiser:'Deputy Pruitt, seated, hands at ten and two, engine off, going nowhere.'},
+ use:{vines:()=>root('You touch the vines. They\'re warm. It\'s a nice temperature. You stand there for a while enjoying it before you notice you are.')},
+ exits:{north:'parkinglot'}};
+
+R.townhall={name:'Town Hall — Historical Society',cl:'main',car:true,
+ d:()=>{const n=spokes();return `A glass case of arrowheads and a wall of framed photographs. ${here('ada')?'Miss Ada Lindqvist sits at a card table under':'A card table with nobody at it, under'} a mural that somebody painted over in the fifties. ${S.f.mural?'The mural is uncovered now: a burning field, a man in the smoke, a bell, and a sky full of birds.':'Beige. Very beige.'} Through the double doors, the meeting room: ${['empty.','a few folding chairs.','rows of chairs, half set up.','rows and rows of chairs, all set up, all facing the window.'][Math.min(n,3)]}${has('photograph')?'':' A {PHOTOGRAPH} in the case is labeled "1934 — Green Winter."'}`},
+ chars:['ada'],items:['photograph'],
+ look:{mural:()=>{S.f.lookedMural=!S.f.mural;return S.f.mural?'A burning field. A man standing in the smoke with his arms at his sides — not fleeing. Behind him, someone hauling a bell rope. And above everything, painted with real care: crows. Hundreds of them. Whoever painted this thought the birds were the point.':'Under the beige you can make out shapes. A field. Smoke. Something in the sky, lots of somethings. You\'d need a solvent to see it.'},chairs:'Folding chairs. The kind that pinch. Every one of them turned toward the window that faces the farm.',case:()=>has('photograph')?'Arrowheads. A jar of 1934 seed corn, gray as a tooth.':'Arrowheads, a jar of 1934 seed corn, and a {PHOTOGRAPH}.',corn:'Ninety-year-old seed corn in a jar. Dead as a doornail. A crow wouldn\'t touch it, and you\'re not sure why you thought that.'},
+ use:{mural:i=>i==='solvent'?(S.f.mural=true,'You daub the stripper on and the beige comes away in wet curls. Ada doesn\'t stop you. She watches. Under the paint: a field on fire, a man standing in the smoke, arms at his sides. A second man hauling a bell rope. And the whole sky above them, painted with enormous care, black with birds.\n\n"There," Ada says quietly. "Now you know as much as I do."'):null,corn:i=>i==='seeds'?'You try to interest the corn in your seeds. This is not how anything works.':null},
+ exits:{east:'nave'}};
+R.nave={name:'First Congregational — Nave',cl:'main',
+ d:()=>`Pews, hymnals, a window that faces the wrong way for the light. ${here('halvorsen')?'Pastor Halvorsen is at the pulpit, though there\'s nobody in the pews, rehearsing. "—and the Garden returns to us, not we to the Garden, and the Mother of the Garden asks only that we sit—" He sees you and beams. "Sit anywhere."':'The pulpit is empty. His notes are still on it.'}`,
+ chars:['halvorsen'],look:{pews:'Empty. Inviting. You stay standing.',window:'Faces the farm. Everything in this town faces the farm.',pulpit:'His notes say "GARDEN," then "the MOTHER," then, underlined twice, "we don\'t have to do anything."'},
+ use:{pews:()=>root(!here('halvorsen')?'You sit for a second. Just a second. The pew is warm from nothing and the church is empty. You get up faster than you sat down.':'You sit for a second. Just a second. The pew is warm from nothing. Halvorsen nods approvingly. You get up faster than you sat down.')},
+ exits:{west:'townhall',north:'vestry',up:'steeple'}};
+R.vestry={name:'Vestry',cl:'main',
+ d:()=>`Robes on hooks, a kettle, and a hole in the ceiling where a bell rope used to run. ${S.f.bellRung?'A rope hangs down through the hole now, still swinging a little.':has('rope')?'The nail beside it is empty now.':'The {ROPE} itself hangs coiled on a nail beside the hole, dusty, taken down a long time ago and never put back.'} ${has('lighter')?'':'On the table, a dented {LIGHTER}, a pack of cigarettes, and a note in the pastor\'s hand: "Don\'t need these anymore. Take them if you do."'}`,
+ items:['rope','lighter'],look:{kettle:'Cold.',note:'"Don\'t need these anymore." Three exclamation points crossed out, like he\'d thought better of the enthusiasm.',hole:'Goes straight up to the bell. Somebody took the rope down and never rethreaded it. Deliberately, you\'d guess.',nail:'Ninety years of dust in the shape of a coil.'},
+ exits:{south:'nave'}};
+R.steeple={name:'Steeple',cl:'main',signal:true,
+ d:()=>`Wind, and the whole town laid out under you like a board game. ${S.f.bellRung?'The bell hangs silent, the rope you threaded still swinging. The rafters are empty.':'The rafters are black with crows, asleep or pretending. The bell hangs over you on its wheel, an iron hook where the rope should be.'} Your phone finds two bars up here and clings to them.`,
+ look:{crows:()=>S.f.bellRung?'Gone. All of them, into the dark.':'Dozens. Hundreds. Tucked into every beam. One opens an eye at you and closes it again. Not interested. Yet.',bell:()=>'Cast in 1911, says the rim. "RING FOR FIRE, RING FOR FLOOD, RING FOR WHAT COMES." '+(S.f.bellRung?'Rung.':'No rope on it. Someone made sure of that.')},
+ use:{bell:i=>{if(i!=='rope')return null;return ringBell()}},
+ exits:{down:'nave'}};
+
+R.waiting={name:'Clinic — Waiting Room',cl:'clinic',car:true,
+ d:()=>`Four chairs, a fish tank${here('doc')?', and Doc Amory holding a chart the way you\'d hold a crossword with no answers. "He\'s fine," he says before you ask. "That\'s the problem. He\'s never been better."':', and the lights off. Doc\'s coat is gone from the hook.'}`,
+ chars:['doc'],look:{fish:'One fish. Not moving. Breathing.',chart:'Cal Rasmussen. BP textbook. Pulse textbook. Under NOTES: "pt. requests window remain open — accommodated."'},
+ exits:{north:'exam',east:'backlot'}};
+R.exam={name:'Exam Room',cl:'clinic',
+ d:()=>!here('cal')?`Empty. The bed is made. The window is open. On the pillow, a single green leaf, curled like a hand.`:`Cal Rasmussen sits on the paper-covered bed in his county polo, boots off, hands folded. The window is open all the way. He looks like a man on the good side of a long vacation. "Agent Mulder," he says, warmly, like he\'s been expecting you. He probably has.`,
+ chars:['cal'],look:{window:'Wide open. The night breathes in. It smells like soybeans and something sweeter under that.',cal:'Calm. Tan. His eyes are the wrong kind of clear.',leaf:'You don\'t touch it.'},
+ exits:{south:'waiting'}};
+R.backlot={name:'Clinic — Back Lot',cl:'clinic',
+ d:()=>`A dumpster, a bike nobody\'s locked, and the water tower rising over the fence with a service ladder anybody could climb. Anybody with a badge, at least.`,
+ look:{ladder:'Goes up. Probably gets bars up there.',bike:'Unlocked.'},
+ exits:{west:'waiting',up:'watertower'}};
+R.watertower={name:'Water Tower',cl:'clinic',signal:true,
+ d:()=>`Sixty feet up, BELLWETHER in flaking paint across the tank. Two bars. From here the farm is a dark square with a darker circle in the middle of it, and the circle is bigger than it was in the Gazette photo.`,
+ look:{farm:'A dark circle in a dark field. Something in the middle of it catches the moonlight. Something wet.',town:'Porch lights. All on. All the windows open.'},
+ exits:{down:'backlot'}};
+
+R.greenhouse={name:'Ochieng Greenhouse',cl:'edge',car:true,onEnter:()=>{S.f.ochiengMet=true},
+ use:{ochieng:i=>i==='sample'?giveSample():i==='soilkit'?'"Dirt? Agent, I have dirt. I have a whole shed of dirt." She waves it off. "A live pod off the fence. Gloved. That\'s what I\'m short."':null,'mrs':i=>i==='sample'?giveSample():null},
+ d:()=>`Humid, green, alive in the normal way. Mrs. Ochieng, retired botanist, reading glasses on a chain, has three pods in three jars on her bench and is taking notes on all of them at once. "Agent! Don\'t touch the middle one, it\'s in a mood."`,
+ chars:['ochieng'],look:{jars:'Three pods. One closed. One half-open and leaning toward the lamp. One grey and crusted, dead, in a jar labeled BRINE 3%. The label under it says "see notes."',notes:'"Phototropic — strong. Thermotropic — stronger. Seed mass enormous. Corvid interest: high, unaffected. Corvid PREFERENCE: sunflower, by a mile — they only eat these when there\'s nothing better. Sample 3: 3% brine bath — dead in fifty minutes, grey, crystallized at the seams. Sample 2: fresh water — thriving. NB: what is the vector?"'},
+ exits:{east:'shed',north:'elevator'}};
+R.shed={name:'Potting Shed',cl:'edge',
+ d:()=>`Terra cotta, bags of perlite${has('soilkit')?', and an empty spot on the bench where the soil kit was':', and a county extension {SOIL KIT} somebody left on the bench'}. Out the back, a public works truck is parked with its tailgate down and a pallet of ${has('salt')?'road salt sacks, one short':'{ROAD SALT} sacks'}, waiting for a winter that\'s months away.`,
+ items:['soilkit','salt'],look:{truck:'Public works. Keys in it.',perlite:'Perlite.'},
+ exits:{west:'greenhouse'}};
+R.elevator={name:'Grain Elevator — Base',cl:'edge',
+ d:()=>`The tallest thing for twenty miles. A rusted ladder runs straight up the north face to the catwalk. ${S.f.vinesCleared?'The ladder is clear — rungs scarred green where the crows worked. The crows are still here, on the wire, keeping the seeds.':'The ladder is wrapped, rung over rung, in green vines thick as a wrist. They move if you watch long enough. They\'re warm.'}${has('crowbar')?'':' A {CROWBAR} lies half-buried in gravel by the loading dock.'} Three crows sit on the wire overhead, watching you with professional interest.`,
+ items:['crowbar'],look:{crows:'They aren\'t afraid of the vines. They aren\'t afraid of you either. All three of them are looking directly at your jacket pocket.',vines:()=>S.f.vinesCleared?'Torn back from the ladder, sulking in the gravel.':'Warm. Slow. Rung over rung. If you grabbed one it\'d feel nice, and you know that, and that\'s the whole problem.',ladder:()=>S.f.vinesCleared?'Clear. Go up.':'Blocked, unless you\'ve got a plan for the vines.'},
+ use:{vines:i=>{if(S.f.vinesCleared)return 'They\'ve had enough of crows for one night.';
+    if(i==='crowbar')return root('You wedge it in and pry. The vine gives, slowly, like it\'s letting you. Your knuckles brush the green. It\'s warm. It\'s — nice, actually. You\'ve been standing here a while.\n\nYou drop the crowbar and pick it up again. Your hand is annoyed at you.');
+    if(i==='seeds'){if(S.seeds<=0)return 'The pouch is empty.';if(S.seeds<12){S.seeds--;ui();return 'You tuck '+(S.seeds===0?'your one seed':'a seed')+' into the coils. One crow drops, takes it, and goes back to the wire. The vines don\'t care. It\'ll take a real dozen to make it worth a fight.'}S.f.vinesCleared=true;S.seeds-=12;return 'You tuck a dozen sunflower seeds into the coils.\n\nNothing. Then one crow drops. Then all three, then more from somewhere, and they go after the seeds with the focus of a bomb squad. The vines are in the way. Green comes off in beakfuls. The vines flinch back from the ladder like they\'ve been burned.\n\nThe rungs are clear. The crows keep the seeds. One of the torn vines is still moving, slowly, in the gravel.'}
+    if(i==='lighter')return 'You flick the lighter near a vine. It doesn\'t care. Something a mile away, in the field, does — you feel it like a change in air pressure. You put the lighter away.';
+    if(i==='salt')return 'You scatter a handful. The vine you hit goes gray and still. The rest don\'t. Forty pounds of salt, forty feet of ladder. Bad math.';
+    return null},
+   crows:i=>i==='seeds'?(S.seeds>0?'You hold out a seed. A crow takes it, politely, and goes back to the wire. That was nice. It didn\'t clear the ladder.':'The pouch is empty.'):null},
+ exits:{south:'greenhouse',up:()=>S.f.vinesCleared?'catwalk':'The ladder is wrapped in vines. Something needs to move them.'}};
+R.catwalk={name:'Grain Elevator — Catwalk',cl:'edge',signal:true,
+ d:()=>`The whole map from up here: the motel\'s one light, the steeple, the water tower, and the farm — a dark square with a wet circle in the middle. Full bars. The last full bars in Bellwether, you\'d bet.`,
+ look:{farm:'The circle in the field has a shape now. Petals? Doors?',town:'Every porch light on. Not one car moving.'},
+ exits:{down:'elevator'}};
+
+R.farmhouse={name:'Halloran Farmhouse',cl:'farm',car:true,
+ d:()=>`${here('hallorans')?'The Hallorans at their kitchen table, a pot of tea between them gone stone cold, both smiling at nothing in particular. The back door is open.':'The kitchen table, two cups of cold tea, two chairs pushed back. The back door is open.'} A whole wall of family photos goes back a hundred years.`,
+ chars:['hallorans'],look:{photos:()=>{S.f.lookedPhotos=true;return 'Weddings, tractors, a county fair. And one from 1934: a young man in a work shirt with the Rasmussen jaw, standing next to a field, arms at his sides. The caption says "Uncle Emil — Green Winter." Cal\'s grandfather. Everybody in this town is related to the last time.'},tea:'Cold. Two cups, full.',door:'Open onto the field. The smell comes in sweet.'},
+ exits:{east:'field'}};
+R.field={name:'Soybean Field',cl:'farm',
+ d:()=>{if(S.turned)return '';return `Rows of soybeans, then rows of something else, and then the ground changes under your shoes: scorched, gray, damp. This is the crater\'s outer edge — the blast ring, where the meteorite\'s heat reached before it stopped. The crater itself is thirty feet north, past a hedge of vines across the path, hedge-thick and utterly still. You can see it from here. You can stand on the edge of it. You can\'t get in. Along the fence line, crows — dozens — working at pods that have grown along the wire, pulling seeds out and eating them. Nothing else is alive out here. No deer. No dogs. Just birds.${has('sample')?' There\'s a gap on the wire where you bagged one. The crows have not forgiven you.':' One {POD} on the fence wire is close enough to bag, if you had gloves and a bad idea.'}`},
+ look:{crows:()=>{S.f.lookedCrows=true;return 'They\'re pulling seeds out of the pods and eating them, without much joy — the way you eat airport food. The pods don\'t seem to mind. The pods don\'t seem to notice at all. Whatever\'s in the air out here, the crows are breathing it and shrugging. One of them is watching your jacket pocket instead of the pod in front of it.'},pods:()=>'Fat, pale, split along one seam. Warm-looking. Nothing on Earth grows like that and you\'d know, you\'ve read the books.'+(has('sample')?'':' One on the wire is close enough to take.'),path:()=>{S.f.triedCrater=true;return 'Vines across it, tight as a hedge, still as a wall. Not moving. Not for you — not yet. Whatever\'s out there is waiting for something, and it isn\'t you.'},crater:()=>{S.craterLooks++;const t=['Past the vines: a circle of scorched dirt, and in the middle, something the size of a washing machine, glistening. Bigger than the Gazette photo.','The thing in the crater is the size of a car now. You didn\'t imagine that.','It\'s bigger than a car. It\'s split open along the top, and there\'s a warm light inside it, and you could swear it\'s facing you.'];return t[Math.min(S.craterLooks-1,2)]},soil:'Scorched, gray, damp where nothing\'s been watered. The crater\'s edge, under your shoes. A soil kit would tell you what kind of wrong.',ground:()=>R.field.look.soil,dirt:()=>R.field.look.soil,edge:()=>R.field.look.soil,ring:()=>R.field.look.soil},
+ use:{ground:i=>i==='soilkit'?soil():null,dirt:i=>i==='soilkit'?soil():null,edge:i=>i==='soilkit'?soil():null,ring:i=>i==='soilkit'?soil():null,crows:i=>i==='seeds'?(S.seeds>1?(S.seeds--,S.f.crowsPrefer=true,'You flick one sunflower seed onto the fence rail. Every crow on the wire abandons its pod mid-bite. Six of them land on the rail. The winner takes the seed; the other five look at you like you\'ve been holding out. The pods sit there, ignored, sweating.'):'You\'re down to your last one. They can tell.'):null,crater:i=>i==='soilkit'?soil():null,soil:i=>i==='soilkit'?soil():null,path:i=>i==='lighter'?'You could. You feel a mile of vine feel you think it. You put it away. Not yet.':i==='salt'?'A handful. One vine grays out. The hedge closes the gap.':null,vines:i=>i==='crowbar'?root('You pry at the hedge. It lets you get your hands deep in before you notice you\'ve stopped pulling.'):null},
+ take:{pod:()=>{if(has('sample'))return 'One\'s plenty. It\'s warm through the bag and you don\'t love that.';give('sample');return 'You reach for the nearest pod barehanded. Your hand really, really wants to. You go back to the car for the gloves first, and a freezer bag, and you bag one pod off the wire while the crows watch you like you\'re stealing from their fridge. Warm through the plastic.'}},
+ exits:{west:'farmhouse',east:'truck',north:()=>{S.f.triedCrater=true;return 'The vines across the path are thick as a hedge and completely still. Whatever\'s out there isn\'t ready for you yet. That\'s the wrong way round, and you know it.'}}};
+R.truck={name:'Cal\'s Truck',cl:'farm',
+ d:()=>`A county pickup nosed up to the edge of the crater path, engine still running after four days, radio murmuring a farm report to nobody. The headlights are off. The tank\'s near empty.`,
+ look:{radio:'"—soybean futures steady, and folks, that\'s the weather. Stay put, it\'s a nice night." It\'s been saying that for a while.',headlights:()=>has('keys')?'Off. Pointed at the hedge, and past it, the crater.':'Off. You\'d need the keys to run them without killing the engine, and Cal has those.',crater:'From here you can see it breathing.'},
+ use:{truck:i=>i==='keys'?trucktest():null,headlights:i=>i==='keys'?trucktest():null},
+ exits:{west:'field'}};
+R.crater={name:'The Crater',cl:'farm',
+ d:()=>{const F=S.fight;if(S.f.craterSeen)return craterNow();S.f.craterSeen=true;return `The scorched circle where the meteorite came down. And in the middle of it, what came down inside the meteorite, four days grown.\n\nA plant. That\'s the only word for it and it\'s the wrong word. The size of a car, pale green shading to something that isn\'t a color, split open along the top like a seed case and breathing — you can see it breathe. Vines the thickness of your arm run out from her base in every direction, under the rows, under the town, under the road east. Every green thing that\'s choked Bellwether this week starts here. She is the thing that came from space. She is what the town has been walking toward.\n\nSeated inside the split, comfortable, hands folded, eyes open: Cal Rasmussen. When she wants to speak, she uses him. "You made it," he says, and smiles, and the smile isn\'t his. "We saved you a seat. Front row. The pods open at first light and then it\'s over and everyone can rest. You have until dawn to sit down. Come and meet the Mother."\n\nThat\'s what the town calls her. You heard it in the pews. You\'re going to call her that too, because the alternative is screaming.\n\nPods the size of pumpkins hang off her flanks${F.light?', split and spilling in the headlight glare':', sealed, sweating, ripening'}.${F.proof===1?' One of them has a crowbar-sized bite in its seam. Half done.':F.proof>=2?(F.light?' One of them is broken open with its neighbours peeled back around it — a ledge.':' One of them is broken open, a narrow slot hemmed in by sealed pods.'):''} ${F.right>=3?'The vines she was holding up over herself lie in the dirt around her, slack. The air above her is open. ':'Over her, a dozen vines stand up out of the split and sway in the air, slow, like kelp — no. Like a hand waving off flies. '+vineState()+' '}${F.light?'':'At the rim, Cal\'s truck idles where he left it four days ago, nose toward her, headlights dark. '}${F.light?'Around the rim, the town is on its feet, turned toward the headlights, swaying.':'Around the rim, the town, seated in rows in the dark, patient, facing her.'}${F.stood.length?' '+F.stood.join(', ')+(F.stood.length>1?' have':' has')+' stepped out of the line toward you.':''} ${S.f.bellRung?'Overhead, the sky is moving. Wings.':'Overhead, nothing. The crows are asleep in the steeple.'}\n\nThe path closed behind you. There is no way out.`},
+ chars:['mother'],
+ look:{vine:()=>R.crater.look.vines,plant:()=>R.crater.look.mother,her:()=>R.crater.look.mother,alien:()=>R.crater.look.mother,cal:'He\'s the mouth. When she talks his lips move a half-second late, like a dub.',pods:()=>(S.fight.proof===1?'The one you started on is gaping a quarter inch. Another heave with the bar and it goes. ':S.fight.proof>=2?(S.fight.light?'One\'s broken open and the ones around it have peeled back: a ledge, a hole, a place a bird could work. ':'One\'s broken open — a narrow slot between sealed neighbours. A hand fits. A bird wouldn\'t. '):'')+(S.fight.light?'The rest are cracked by the light, seeds fat and pale inside.':'The rest are sealed tight, pressed together like a fist. Ripe but waiting — for dawn, you figure, when everyone\'s rooted enough to carry. Or for anything bright enough to pass for it. Ochieng\'s pod turned a quarter-turn toward a space heater. Cal\'s truck is right there.'),town:()=>S.fight.light?'Denise. Pruitt. The Hallorans. Ada. Doc. All standing now, turned to the light, swaying a little.':'Denise. Pruitt. The Hallorans. Ada. Doc. All seated. All smiling. All facing her.',sky:()=>S.f.bellRung?(S.fight.right>=3?'Crows, hundreds, and nothing between them and her now. They\'re waiting for a reason.':'Crows, circling, hundreds, not landing. Every time one dips, a vine comes up to meet it. She\'s keeping the air.'):'Empty. You should have rung the bell.',vines:()=>S.fight.right>=3?'Down. All of them, slack in the dirt, twitching now and then like something dreaming. She\'s stopped holding her breath. Nothing is between you and her now but her.':'The ones standing up out of her sway like a hand waving off flies. '+vineState()+' She holds them up the way you hold your breath — as long as she\'s paying attention, nothing you\'re carrying gets near her.',truck:'Still running at the edge of the crater. Radio still murmuring.',mother:()=>'An alien plant the size of a car, split open, breathing, with a county employee sitting in it like a man in a bathtub. You\'ve waited your whole career for something this unambiguous and you can\'t even call Scully.'+(S.fight.right<3?' The vines over her sway in time with her attention — every time she\'s busy talking, they drift a little. She\'s never had to hold a conversation and a defense at the same time.':' The vines are down. She\'s stopped defending herself; she\'s only talking.')},
+ use:{
+   truck:i=>i==='keys'?light():null,headlights:i=>i==='keys'?light():null,
+   pod:i=>i==='crowbar'?proof():i==='seeds'?seedsOnMother():null,pods:i=>i==='crowbar'?proof():null,
+   mother:i=>i==='seeds'?seedsOnMother():i==='crowbar'?proof():i==='salt'?endSalt():i==='lighter'?endFire():i==='rope'?('You\'re holding a rope. The bell is a mile away in the steeple, hookless, silent. You should have put it back before you followed them in.'):null,
+   field:i=>i==='lighter'?endFire():i==='salt'?endSalt():null,
+   cal:i=>i==='seeds'?seedsOnMother():null,
+   plant:i=>R.crater.use.mother(i),her:i=>R.crater.use.mother(i),it:i=>R.crater.use.mother(i),alien:i=>R.crater.use.mother(i),'seed case':i=>R.crater.use.mother(i),
+ },
+ exits:{}};
+
+/* ===================== CHARACTERS ===================== */
+function root(t){S.rooted++;ui();const w=['\n\n(Something inside you sat down a little.)','\n\n(You notice you\'re smiling. You stop. Your hand has gone to the seed pouch on its own.)','\n\n(How long were you standing there? Your mouth wants salt. Something sharp. Something that\'s yours.)'][Math.min(S.rooted-1,2)];
+  if(S.rooted>=4){say(t);endSeated();return ''}return t+w}
+const C={
+ denise:{n:'Denise',talk:()=>{const v=(S.visits.office||1);const g=[
+   '"Cal Rasmussen? Sweetheart, everybody knows Cal. Went out to the Hallorans\' and just — didn\'t feel like driving back, I guess. Doc\'s got him. He\'s FINE. He\'s more than fine." She laughs. "Wish I could catch whatever he\'s got."',
+   '"You know, I used to hate this job. Nights, the buzzer, the ice machine. Tonight I just don\'t mind." She looks at the window. "Everybody\'s going out to the meeting later. You should come."',
+   '"It\'s nice out."','"It\'s nice."'];
+   return [
+   ['Ask about Cal Rasmussen',()=>g[Math.min(v-1,3)]],
+   ['Ask about the meeting',()=>spokes()>=3?'"Eight o\'clock. Town hall. Then we all walk out together." She says it like a hymn.':'"Town meeting, eight sharp. About the — you know." She waves toward the farm. "Pastor\'s speaking. Everybody\'s going. Everybody."'],
+   ['Sit down a minute',()=>root('You sit on the lobby couch. Denise smiles. The couch is very comfortable. You are up before you decide to be.')]]}},
+ pruitt:{n:'Deputy Pruitt',talk:()=>[
+   ['Ask what he\'s doing',()=>'"Waiting on backup, sir." He doesn\'t turn his head. "County said they\'d send a unit. That was Sunday." He smiles at the windshield. "Nice night for it."'],
+   ['Ask about the road',()=>'"Grows over some nights. Grows back. Your partner\'s coming this way?" He nods, slow. "She\'ll be fine. Everybody\'s fine."'],
+   ['Sit in the cruiser with him',()=>root('You get in the passenger side. The seat\'s warm. The radio\'s playing something without words. You watch the vines for a while. Then you get out, and it takes more than it should.')]]},
+ ada:{n:'Miss Ada',talk:()=>[
+   ['Ask about the meteorite',()=>'"Oh, it\'s in the paper. Came down last Thursday. Made a lovely noise." She adjusts a stack of index cards that doesn\'t need it. "Nice for the tourism."'],
+   ['Ask about 1934',()=>S.f.mural?(S.f.adaDone=true,S.f.bellKnown=true,'She looks at the mural for a long time.\n\n"The Green Winter. It came down like this one did. Grew like this one did. Everyone got so — pleasant." She folds her hands. "They burned the field. But you can\'t just burn it — the seed goes up in the smoke and it needs somewhere to land, and if you give it nowhere it takes everywhere. Every field for fifty miles. Unless it has somewhere it already knows." She looks at the man in the painted smoke. "Emil Rasmussen was the first one to sit down that winter. He was hers before anyone. The smoke didn\'t land on him, Agent Mulder — it went home to him. All of it. Then he walked east with it, out of town, and kept walking until it was finished with him. They found him in April. My grandfather rang the bell." She taps the painting, the sky. "Nobody ever said why the bell. Everyone remembered the fire. Nobody remembered the birds. I think they were the point, Agent Mulder. I think the birds were the whole point."\n\nShe smiles. "I\'m going to the meeting now."'):(S.f.adaVague=true,'"The Green Winter." She smiles the way you\'d smile at a dentist. "It was a hard year. We don\'t talk about it much." She looks, involuntarily, at the mural. "Someone painted over the — well. It was a hard year."')],
+   ['Ask about the photograph',()=>'"Emil Rasmussen and my grandfather. That\'s the field. That\'s the fire." She pauses. "That\'s the rope."']]},
+ halvorsen:{n:'Pastor Halvorsen',talk:()=>[
+   ['Ask about the sermon',()=>'"The Garden!" He\'s delighted. "And the Mother in it — that\'s what Cal called her, when he came by. It stuck." "We spend our whole lives trying to get back in, and here it comes to us. All we have to do is sit down." He isn\'t possessed. You almost wish he were. "You should sit down."'],
+   ['Ask about the bell',()=>'"1911. Hasn\'t rung since before my time — somebody took the rope down after the Green Winter and hung it on a nail, and nobody ever put it back." He glances up. "There\'s a note in the vestry ledger — ring for what comes. I always liked that. Nothing came, you know? Until now."'],
+   ['Sit down in the pews',()=>root('You sit. He nods like a man watching a plant take. "There," he says. You get up. It\'s an effort.')]]},
+ doc:{n:'Doc Amory',talk:()=>[
+   ['Ask about Cal',()=>'"Perfect vitals. Perfect. Hasn\'t eaten in four days and his numbers look better than mine." He rubs his face. "He asked me to keep the window open. I did. And then I kept mine open at home. And it\'s — it\'s nice? Is that a symptom?"'],
+   ['Ask about the window',()=>{S.f.docDone=true;return '"He said the air was better. And it is." Doc looks at his own hands. "Mine\'s stuck open now. I don\'t really mind." He says it like he\'s telling you a diagnosis. Maybe he is.'}],
+   ['Ask about the town',()=>'"Blood pressure\'s down across the board. Nobody\'s come in with anything in three days. I should be thrilled." He isn\'t.']]},
+ cal:{n:'Cal Rasmussen',talk:()=>{return[
+   ['Ask what happened in the field',()=>'"I got out of the truck," he says, "and I looked at it, and I thought — I don\'t have to do the reports." He laughs, easy. "Twelve years of reports, Agent Mulder. I just sat down. It was the best idea I\'ve ever had."'],
+   ['Ask about his truck',()=>{if(has('keys'))return '"Still running?" He nods, pleased. "Good truck."';give('keys');return '"Truck? Oh — still out there, still running, probably. Here." He unhooks the {KEYS} from his belt and holds them out without looking at them. "I don\'t think I\'ll be needing them." He says it like he\'s passing the salt.'}],
+   ['Ask about his grandfather',()=>'"Emil." His face does something warm. "I never met him. Died in \'34. But I\'ve been — remembering him, this week. Isn\'t that strange? Standing in a field with his arms down. Like he\'d decided something." He smiles at the open window. "I think he was happy."'],
+   ['Sit down next to him',()=>root('You sit on the edge of the paper bed. He shifts to make room. The window breathes on the back of your neck and you think: this is fine. Then you think: get up. It takes two tries.')]]}},
+ ochieng:{n:'Mrs. Ochieng',talk:()=>{const o=[
+   ['Ask what she\'s found',()=>{const t='"Phototropic, thermotropic, and I mean STRONGLY — the middle one turned a full quarter toward the space heater in ten minutes. Seed mass is absurd. Every crow in the county will eat them and not one crow is acting funny — though I put out a dish of sunflower seed next to the jars and they didn\'t look at the pods again all afternoon." She taps the jar. "Whatever this does to people, it doesn\'t do to birds. Don\'t ask me why. Ask me tomorrow. Don\'t try opening one with your hands — they don\'t open for hands, I had to use a chisel. And don\'t give one a bath: I salted the third jar to see what would happen and it was dead in an hour."';S.f.chiselKnown=true;S.f.saltKnown=true;return t}],
+   ['Ask about the meeting',()=>'"Oh, I\'m not going." She says it like it\'s obvious. "I\'ve got work. First person in ninety years who\'s got something interesting to do in this town and they want me to sit in a chair." She snorts. "Tell you the truth, Agent, I don\'t think I could sit still if I tried."']];
+   if(has('sample'))o.push(['Offer her the pod',()=>giveSample()]);
+   else o.push(['Ask what she needs',()=>'"A live one off the fence, gloved, if you\'re out there. Mine are all from one vine. I want to see if they argue."']);
+   return o}},
+};
+function giveSample(){if(!has('sample'))return null;drop('sample');give('solvent');return '"Oh, you GLOVED it. Bless you." She takes the bag like it\'s a kitten. "Mine are all off one vine. I need a fence one." She sets it by the others, and then looks at you differently. '+(S.visits.townhall?'"You\'ve been to the town hall? You\'ve seen the beige." You have. ':'"When you go by the town hall — and you will — look at the big beige wall behind Ada\'s table. ')+'"There\'s a mural under that. My mother helped paint it, 1935. She said it was the birds — the whole point was the birds — and the council covered it in \'52 because it frightened the children." She rummages under the bench and comes up with a brown bottle. {SOLVENT}. "I\'ve been trying to get Ada to let me strip it for twenty years. She won\'t. She might not stop a federal agent." She pushes it into your hands. "Tell me what\'s under there."'}
+Object.assign(C,{
+ hallorans:{n:'the Hallorans',talk:()=>[
+   ['Ask about the crater',()=>'"Made a heck of a noise," Mr. Halloran says. "Then it didn\'t." Mrs. Halloran pours you a cup of cold tea you didn\'t ask for. "You should see it up close. Everyone should."'],
+   ['Ask about Cal',()=>'"Cal\'s family," Mrs. Halloran says. "His grandpa\'s on the wall there." She smiles at the wall. "Good people, the Rasmussens. Always knew when to stop."'],
+   ['Sit down with them',()=>root('You sit. The tea is cold and you drink it anyway. The three of you look at the open door for a while. Getting up feels rude, and then it feels hard.')]]},
+ mother:{n:'the Mother',talk:()=>fightOptions()},
+});
+
+/* ===================== SPECIALS ===================== */
+const GONE={ada:'main',halvorsen:'main',cal:'clinic',doc:'clinic',hallorans:'farm',denise:'ready'};
+function gone(c){const k=GONE[c];if(!k)return false;if(k==='ready')return S.ready&&S._left.ready;return S.closed[k]&&S._left[k]}
+function present(r){return (r.chars||[]).filter(c=>!gone(c))}
+function here(c){return !gone(c)}
+function leaveRoom(){for(const k in S._closeRoom)if(S._closeRoom[k]===S.room&&!S._left[k]){S._left[k]=true;if(S._notes[k]){sys(S._notes[k]);delete S._notes[k]}}}
+function soil(){if(S.f.soilRead)return 'You\'ve got the reading. Nobody\'s going to believe it until Scully does.';S.f.soilRead=true;return 'You crouch and run the kit on the scorched ground at your feet — the crater\'s edge. pH: fine. Nitrogen: fine. The salinity strip goes a color past the end of the laminated chart. You run it again. Same color. You hold the strip against the chart and there is nowhere to put it. You fold it into your notebook. Somebody who knows what this means would help. Somebody who\'s driving. Somebody you\'d need bars to reach.'}
+function ringBell(){if(S.f.bellRung)return 'It\'s rung. It\'s still ringing, somewhere in your teeth.';if(!has('rope'))return null;
+  S.f.bellRung=true;drop('rope');let t='You thread the rope through the hook, drop it through the hole to the vestry floor, and haul. The bell hasn\'t rung at night since 1934 and it sounds like it knows that — one enormous bronze note that goes out over the town and doesn\'t come back.\n\nThe rafters explode. Every crow in the steeple, every crow in Bellwether, up and out into the dark in one black wave, wheeling, screaming, circling the town like a question.';
+  if(!S.f.bellKnown)t+='\n\nYou\'re not entirely sure why you did that. It felt right. Ada would know.';return t}
+function craterNow(){const F=S.fight;const p=[];
+  p.push(F.light?'Headlights across the crater. The pods have unfolded flat against her flank, seed showing pale in the glare'+(F.proof>=2?', and where you pried one there\'s a ledge now, a hole with a lip a bird could work.':'.'):'The pods hang sealed off her flanks, pressed tight, sweating'+(F.proof===1?'. One has a crowbar bite in its seam — half done.':F.proof>=2?'. One is broken open, a narrow slot hemmed in by its sealed neighbours.':'.'));
+  p.push(F.right>=3?'Her vines lie slack in the dirt. The air above her is open.':'Her vines stand up out of the split and sway. '+vineState());
+  p.push(F.light?'The town is on its feet around the rim, turned to the light.':'The town sits in its rows around the rim, facing her.'+(F.stood.length?' '+F.stood.join(', ')+(F.stood.length>1?' have':' has')+' stepped toward you.':''));
+  p.push(S.f.bellRung?(F.right>=3?'Overhead, crows — hundreds — and nothing between them and her.':'Overhead, crows circle and don\'t land.'):'Overhead, nothing.');
+  p.push(F.light?'':'Cal\'s truck idles at the rim, nose toward her, headlights dark.');
+  p.push('Cal watches you from inside her with his hands folded.');
+  return p.filter(Boolean).join(' ')}
+function vineState(){const r=S.fight.right;return r>=3?'They\'ve all dropped. The air over her is open.':r===2?'Half of them have sagged into the dirt.':r===1?'One of them has stalled, drooping.':'Nothing could land through them.'}
+function trucktest(){return 'You lean in and flick the headlights on. They hit the hedge across the path and nothing else — a wall of green, glowing, that flinches and closes tighter. On the far side, something turns toward the light. Something big.\n\nYou kill the lights. The tank\'s nearly empty. Whatever\'s out there wants the light, and you\'ll want that later, when there isn\'t a hedge between you.'}
+function light(){const F=S.fight;if(F.light)return 'The headlights are already on her. The pods are open. The town is standing up.';F.light=true;
+  return 'You lean into the cab and turn the key. The headlights come up full on her, and she can\'t help it — phototropic, Mrs. Ochieng said, STRONGLY — the pods turn to the light and unfold, one after another, petals of rind folding back flat against her flank, pale seed showing in the glare like teeth. '+(F.proof>=2?'The slot you pried is a slot no longer — the pods around it have peeled open, and there\'s a ledge there now, a place to land, a place to tear. ':'')+'\n\n"Rude," she says, through Cal, squinting. "But thank you. We were going to wait for the sun. You\'ve saved us the trouble."\n\nBehind you, in the rows, the town starts to turn toward the light too. Slowly. Standing.'}
+function proof(){const F=S.fight;if(F.proof>=2)return 'The pod\'s already open. '+(F.light?'There\'s a ledge in her. Fill it.':'It\'s a slot between sealed pods; prying the next one would take all night. Something needs to make them open on their own.');
+  if(F.proof===0){F.proof=1;return root('You get the bar under the seam of the nearest pod and lean. Your hands are on her. She\'s warm. She\'s so warm, and the crowbar is heavy, and it would be easy to just — \n\n"Tell me about your taxonomy," you say, out loud, to nobody, to stay yourself. The seam gives a quarter inch and stops. Not enough. One more heave on the crowbar would do it — but your hands are on her, and you can feel that, and you should get your head straight before you go again.')}
+  F.proof=2;return 'You go again. The seam splits with a wet sound and the pod falls open, pale seeds packed inside like a pomegranate. It\'s a deep, narrow slot — the pods on either side are still sealed and pressed tight against it, so what you\'ve made is a crack a hand fits into. Or a pouch. Not a bird.'+(S.fight.light?'':' The sealed ones shift a little as you straighten up — toward you, or past you. You turn. Behind you, at the rim, Cal\'s truck is idling in the dark, and the pods are leaning very slightly toward the one place a light could come from.')+'\n\n"Ow," says Cal, conversationally. "That one was going to be a Halloran. What are you going to do, Agent Mulder, eat it? You don\'t have the teeth."\n\nOverhead, the circling tightens.'}
+function seedsOnMother(){const F=S.fight;
+  if(S.seeds<10)return 'You shake the pouch. '+S.seeds+' seed'+(S.seeds===1?'':'s')+'. Not enough to interest one crow, let alone a county of them. You should have hit the machine.';
+  if(F.light&&S.f.bellRung&&F.proof>=2&&F.right>=3)return endTrue();
+  let why=[];if(!S.f.bellRung)why.push('the crows are a mile away, asleep in a steeple');if(!F.light)why.push(F.proof>=2?'the slot you pried is hemmed in by sealed pods — a crow could get a beak in, not a body, and they won\'t land on her for a beakful. The pods around it need to unfold, and they\'re waiting for dawn or anything bright enough to pass for it; Cal\'s truck is idling at the rim with its headlights off':'her pods are sealed tight, waiting for dawn or something bright enough to pass for it — and Cal\'s truck is idling right there with its headlights off');if(F.proof<2)why.push('there\'s nowhere on her to put the seeds where she can\'t shake them off');if(F.right<3)why.push('the vines she keeps up over herself would knock any bird out of the air — she\'s paying too much attention to let anything land');
+  if(F.proof>=2)return 'You open the pouch over the hole in her — and stop. You\'d be pouring them into the dark for nothing: '+why.join('; ')+'. Waste them now and there\'s no second pouch.\n\nYou close the pouch. Cal watches you do it. "Birds," she says, delighted, as if you\'d shown her a card trick. "He brought BIRDS. '+(S.fight.corrected?'Fourteen years — fine, FOURTEEN — ':'Twelve years ')+'and this is the plan. Oh, we\'re going to keep you."';
+  return 'You scatter a few sunflower seeds across her flank. They slide off. She\'s '+(F.light?'split by the light but the seams are shallow, and the seeds just roll down into the dirt at her base':'sealed and warm and the seeds just sit in the dirt at her base')+'. You\'d need somewhere on her to put them where they\'d stay.\n\nNothing comes. Of course nothing comes: '+why.join('; ')+'.\n\nCal laughs, softly, kindly. "They\'re not yours, Agent Mulder. Nothing here is. Sit down before you embarrass yourself in front of the town."'}
+
+const BEATS=[
+ {m:'"Agent Mulder." Cal\'s mouth, a half-second late. "Twelve years of driving to little towns to be laughed at. We\'ve read your reviews. Sit down. Nobody here is going to laugh. Nobody here is going to do anything ever again, and isn\'t that lovely."',
+  o:[['"You\'re right. I\'m tired."',0],['"Twelve? That\'s Cal\'s number. Mine\'s fourteen. Try again."',1,'corrected'],['"I\'ve put down worse things than you."',0]],
+  r:'"Fourteen," Cal says, like he\'s checking a form.'},
+ {m:'"Genus. Species." Cal\'s mouth makes a shape that on a person would be a laugh. "You want a label so you can put us in a drawer in a basement. We don\'t have a genus, Agent Mulder. We have a family. Every one of them out there is family now. You could have one. You\'ve been auditioning for one your whole life."',
+  o:[['"...A family."',0],['"He didn\'t join a family. He got tired of reports. You\'re not love, you\'re a nap."',1],['"They\'re not family. They\'re hostages."',0]],
+  r:'"He hated the reports," Cal says, and stops. She\'s heard it: a man who hates his job isn\'t a man who wanted a family. She has no drawer to put that in.'},
+ {m:'"We read about your sister." Gently. Like a hand on the back of the neck. "Cal read it. Standing in a line, holding a gallon of milk. We could give you the quiet where she is. She isn\'t afraid there. You\'d be surprised how little anyone is afraid, once they stop."',
+  o:[['"Don\'t."',0],['"You read the Enquirer. Did you get to the Jersey Devil part?"',1],['"Is she —"',0]],
+  r:'"The —" A pause where a page would turn. She\'s only got what Cal read in a checkout line.'},
+ {m:'"I — we. Fine. Here is what we will do, since you\'re so tired of being offered things." Cal leans forward an inch. "We will open the road. Dana Scully. Tonight. She walks in with her little flashlight and her little bag, and she sits beside you, and you are both fine, and you never drive again. Say yes. You\'ve never once said yes to anything."',
+  o:[['"Yes."',0],['"You\'re under the road. Move and you\'re a houseplant."',1],['"Don\'t say her name."',0]],
+  r:'"I —" Cal says. Just that. First time she\'s said it.'},
+ {m:'"I. I don\'t —" Cal\'s hands unfold. "Sit. You sit. Everyone sits. That is what happens. That is what has always — sit. Please. Please sit."',
+  o:[['"Okay."',0],[()=>S.fight.oceanSaid?'"You\'re from an ocean. This is Oregon. You\'re not a mother, you\'re shipwrecked."':'"You can\'t carry your own seed. You need them. You\'re not their mother — you\'re their dependent."',1],['"Shut up."',0]],
+  r:()=>S.fight.oceanSaid?'She has no answer for that. Cal looks, for a second, at the dry ground around her.':'She has no answer for that. Cal\'s hands, which were folded, come apart.'},
+];
+const VINES=['','Over her, one of the waving vines stalls — forgets itself — and droops.','Half the vines are down now, trailing in the dirt. The circling overhead drops fifty feet.','The last vine drops. The air over her is empty, and she hasn\'t noticed. Four days and she\'s never once not noticed anything.','Nothing left up there to drop.'];
+const STAND=['Denise','Deputy Pruitt','Mrs. Halloran','Miss Ada'];
+const ORDERS=[[1,0,2],[0,1,2],[2,1,0],[1,2,0],[0,2,1]];
+function useNote(){const F=S.fight;if(F.right<3)return F.beat>=BEATS.length?'the vines are still up and she\'s done talking':'the vines are still up — nothing gets near her yet';const m=[];if(!F.light)m.push('pods sealed — the truck');if(F.proof<2)m.push(F.proof===1?'the pod needs one more heave':'no way into a pod');if(!S.f.bellRung)m.push('no birds — the bell never rang');return m.length?'for the birds: '+m.join(' · ')+' — salt or fire don\'t care':'she\'s open'}
+function useOpt(){return ['Do something to her instead',()=>{S.mode='play';S.opts=[];input.value='USE ';input.focus();return 'You stop talking. Your hands are already in your pockets.'},useNote()]}
+function fightOptions(){const F=S.fight;
+  if(F.beat>=BEATS.length&&F.right<3){return{m:'"We\'ve said our piece," she says, mildly. "You\'ll sit eventually. They all do. We can wait longer than you can stand." The vines are still up. Your knees have started to have opinions about the night.',o:[['Keep standing',()=>{S.rooted++;ui();if(S.rooted>=4){say('You keep standing. You keep standing. At some point you aren\'t.');endSeated();return null}return 'You keep standing. It costs something. She doesn\'t say anything at all, which is worse, and a vine settles across your shoe like a cat.'}],['Sit down',()=>{S.rooted=4;ui();say('You sit. It\'s such a relief that you\'re briefly furious about it.');endSeated();return null}]]}}
+  if(F.beat>=BEATS.length){const ready=F.light&&S.f.bellRung&&F.proof>=2&&F.right>=3;return{m:F.right>=3?'"Well." Cal\'s mouth, a long beat late. "Go on, then. Do whatever it is you drove '+(S.fight.corrected?'fourteen':'twelve')+' years to do. We\'ll be here. We\'re always here." The vines lie in the dirt. It\'s your move.':'"We\'ve said our piece," she says, mildly. "You\'ll sit eventually. They all do. We can wait longer than you can stand." The vines are still up.',o:[['Say nothing',()=>'You say nothing. "Mm," she says, through Cal, like a hostess whose guest has stopped eating. The town breathes in its rows.'],useOpt()]}}
+  const bi=F.beat,b=BEATS[bi];
+  const order=ORDERS[bi%ORDERS.length];
+  const opts=order.map(k=>{let [t,ok,tag]=b.o[k];if(typeof t==='function')t=t();return [t,()=>{F.beat++;if(ok){F.right++;if(tag==='corrected')F.corrected=true;return (typeof b.r==='function'?b.r():b.r)+' '+VINES[Math.min(F.right,4)]}
+    S.rooted++;ui();const who=STAND[Math.min(F.stood.length,3)];if(!F.stood.includes(who))F.stood.push(who);
+    if(S.rooted>=4){say('Warmth, all the way down.');endSeated();return null}
+    const jab=['"There he is," she says, pleased, as if you\'d finally parked straight.','"See? That wasn\'t hard. Nothing is hard. That\'s the secret nobody told you."','"Oh, we like that one. Say it again, slower."','"You\'re very tired, Agent Mulder. It\'s all right. Everyone was."'][Math.min(F.stood.length,3)];
+    return jab+' Cal\'s smile gets a degree warmer. A vine finds your ankle and rests there, friendly. The ones over her sway a little faster. Behind you, '+who+(S.fight.light?' steps out of the standing line':' stands up out of the rows')+' and takes one step toward you. You know their name. That\'s the problem.'}]});
+  const ready=F.light&&S.f.bellRung&&F.proof>=2&&F.right>=3;
+  opts.push(useOpt());
+  return{m:b.m,o:opts}}
+
+/* ===================== ENDINGS ===================== */
+function endScreen(title,body){S.mode='end';S.ended=true;body.forEach(t=>cut(t));say(title,'end');$('#restart').style.display='block';$('#crater').style.display=(checkpoint||hasCp())?'block':'none';ui()}
+function hasCp(){try{return !!localStorage.getItem(KEY+'.crater')}catch(e){return false}}
+function backToCrater(){let cp=checkpoint;if(!cp)try{cp=localStorage.getItem(KEY+'.crater')}catch(e){}if(!cp)return say('No crater checkpoint yet.','sys');loadSnap(cp);log.innerHTML='';anchorY=null;$('#restart').style.display='none';$('#crater').style.display='none';queue=[];cut('— midnight, again —');cut('You slip in behind the last of them before the vines close. Whatever you\'re carrying is what you\'ve got.');ui();look();input.focus()}
+function endSeated(){endScreen('YOU SAT DOWN.',['It\'s a nice night. Everyone said so.','Somewhere east, a rental car reaches a wall of green and stops. Its headlights stay on a long time.','A field. A row. A smile. Warmth, all the way down.'])}
+function endSalt(){if(!has('salt'))return null;
+  if(S.fight.right<3){S.fight.saltTried=(S.fight.saltTried||0)+1;{const t='You split the sack and throw a handful. A vine sweeps down and across her flank before it lands — a broad, unhurried motion, like brushing crumbs off a table — and the salt is in the dirt at her base, doing nothing. The vine goes back up. She\'s watching.\n\n"Salt," she says, and for the first time there\'s something under the amusement. "You people put it on your food. We crossed an ocean to get here, Agent Mulder. Not one of yours."';S.fight.oceanSaid=true;return S.fight.saltTried===1?t+'\n\nForty pounds of salt is a lot of handfuls. She only has to be paying attention.':'She sweeps it away again, without looking at you. "Still?" You\'d have to get her to stop looking.'}}
+  if(!S.fight.saltArmed){S.fight.saltArmed=true;
+    say('You split the sack and throw one handful. It lands on her flank and the green goes gray where it touches, gray and dry and still, a hand-sized patch of nothing. She makes a sound through Cal — not a word, an exhale.\n\n"Oh," Cal says, mildly, looking at the patch. "That\'s the sea, isn\'t it. We remember the sea." He looks at you. "It would take a while. You\'d have to keep going. I don\'t think I\'d be much company by the end."');
+    S._talking=null;S.mode='dialogue';S.opts=[['Keep going',()=>{S.fight.saltArmed=false;doSalt();return null}],['Stop',()=>{S.fight.saltArmed=false;return 'You stop. The gray patch stays gray. She\'s very still, waiting to see what you are.'}]];showOpts();return ''}
+  doSalt();return ''}
+function doSalt(){endScreen('THE SALT ENDING.',['You keep going. Armful after armful, and she grays where it lands, and grays, and grays, and the vines under the town go gray with her, and Cal\'s mouth says "oh" once more and then nothing. His eyes stay open.','It takes an hour. Your arms stop working before the sack runs out.','The town wakes slowly, cold, stiff, embarrassed. Everyone\'s fine. Everyone keeps saying so.','Cal walks home. He\'s fine. He keeps his window open. He keeps it open the rest of his life, and every now and then, mid-sentence, he stops and looks at it, and doesn\'t finish.','Headlights on the ridge at four. Scully gets out into a gray field that crunches. You don\'t have a good answer for her.','Everyone survived. Nobody says that like it\'s the whole story.'])}
+function endFire(){if(!has('lighter'))return null;
+  if(S.fight.right<3){S.fight.fireTried=(S.fight.fireTried||0)+1;return S.fight.fireTried===1?'You thumb the lighter open. Before the flame is even steady, one of the vines she keeps up over herself comes down across your wrist — not hard, almost polite — and the lighter is in the dirt six feet away, and the vine is back up, swaying, and Cal hasn\'t stopped smiling.\n\n"Emil tried that too," she says. "Emil at least had the decency to be on fire first."\n\nYou pick it up. She\'s paying attention. As long as she\'s paying attention, nothing gets near her.':'You don\'t even get it open this time. She\'s watching your hands now. Whatever you\'re going to do to her, she has to be looking somewhere else first.'}
+  if(!S.fight.fireArmed){S.fight.fireArmed=true;
+    say('You thumb the lighter open. The flame is small and yellow and every green thing in the crater leans away from it at once — vines, pods, her — a whole field flinching.\n\nCal doesn\'t flinch. He looks at the flame the way you\'d look at an old photograph. "That\'s how Emil did it," he says. "You burn her and the seed goes up in the smoke, and it has to come down somewhere. Give it nowhere and it comes down on everything — the county, the next county. But it knows me." He touches his own chest, lightly, like checking for keys. "I was first. I sat down before anybody. It\'ll come to me before it goes anywhere else, all of it, the way it went to Emil." He smiles. "Then I walk. It takes a while. I don\'t mind, Agent Mulder. I\'ve thought about it and I don\'t mind."\n\nBehind you the town stirs in its rows, turning toward the light in your hand.');
+    S._talking=null;S.mode='dialogue';S.opts=[['Light the field',()=>{S.fight.fireArmed=false;doFire();return null}],['Close the lighter',()=>{S.fight.fireArmed=false;return 'You snap it shut. The crater relaxes. Cal looks, briefly, disappointed.'}]];S._fireOpts=true;showOpts();return ''}
+  doFire();return ''}
+function doFire(){endScreen('THE 1934 ENDING.',['You touch the flame to the nearest vine. It goes up like it was waiting to, and the fire runs the vine like a fuse — under the rows, under the fence, out toward the road, a bright map of everywhere she\'s been.','The pods go last, and loudest. The spores go up with them: a warm, sweet cloud, rising, looking for a place to land.','Cal stands. Arms at his sides. He walks into the smoke the way his grandfather did, unhurried, and the cloud finds him — you watch it find him, the whole sweet weight of it settling on one man instead of a county — and you shout his name, and he turns and gives you a little wave like a man leaving a party, and you let him, because you can\'t think of anything else, and he\'s smiling, and that\'s the worst part.','He walks out the far side of the smoke and keeps walking, east, into the dark past the road. Nobody stops him. Everybody who could has just woken up.','The town wakes up in the firelight, one by one, coughing, embarrassed. Denise asks what time it is. Pruitt asks where his hat is. The Hallorans hold each other and don\'t know why.','The road east is ash by four a.m. Headlights on the ridge. Scully gets out into a burning field and looks at you and looks at the field and looks at you.','"Mulder. Where\'s the extension agent."','You point east. You say his name. You say "April," and you can\'t explain the rest.','Somebody paints over this one, too.'])}
+function endTrue(){endScreen('YOU FED THE BIRDS.',['You empty the pouch into the open pod. Sunflower seeds, a whole fistful, packed in among hers where she can\'t shake them loose. Then you step back and hold up the empty pouch, the way you\'ve done all week. That\'s the seed guy. Dinner\'s on.','The sky comes down.','Every crow in the county, going for the sunflower seeds like it\'s the elevator ladder all over again — and the pod is in the way. So they tear the pod. And there are more pods. And every pod is full of seeds that aren\'t as good but will do, and the crows are not picky, and she has no line for it. She has never lost a harvest.','"That isn\'t —" she says, and then, "those are OURS," and then, much smaller, "wait." And it is Cal\'s voice. And then it\'s just Cal, blinking in the seed case, and around the rim the whole town stands up like they fell asleep at a party.','Cal climbs out. He asks what happened.','"You ever seen a crow work a puzzle box?"','Headlights on the ridge, four a.m. A rental car door. Scully steps into a field full of dazed people and roughly four hundred birds, several of them on you.','"Mulder. Why are you covered in birds."'])
+  return ''}
+
+/* ===================== HINTS ===================== */
+// each: [key, applies(), roomsWhereMostRelevant, soft hint, hard hint]
+const HINTS=[
+ ['seeds',()=>!has('seeds'),['room6'],'Check the bed.','TAKE SUNFLOWER SEEDS. There are always seeds in the pocket.'],
+ ['fight-vines',()=>S.turned&&S.fight.right<3,['crater'],'She\'s holding those vines up by paying attention, and nothing gets past them — not birds, not fire, not salt. Take her attention. TALK to her and find the edges of what she actually knows — the answers that make her check herself.','Pick the lines that poke a hole in a promise: her numbers are Cal\'s, she can\'t open a road she\'s under, she only knows what a tabloid printed. Three of those and the vines drop.'],
+ ['fight-light',()=>S.turned&&!S.fight.light,['crater'],'The pods are sealed till dawn — or till anything bright enough to fake it. Ochieng\'s pod chased a space heater. What in this crater makes light, and who gave you the keys to it?','USE KEYS ON TRUCK. Headlights on the pods and they split early.'],
+ ['fight-bell',()=>S.turned&&!S.f.bellRung,['crater'],'The birds are asleep in the steeple and there\'s no way back. The good ending\'s gone for this run — the bell had to ring before midnight. Rattle her, then salt or fire will still end it.','No fix from here. Next time: ROPE from the vestry, USE ROPE ON BELL in the steeple, before you WAIT.'],
+ ['fight-proof',()=>S.turned&&S.fight.proof<2,['crater'],'You need somewhere on her to put the bait where she can\'t shake it off. The pods don\'t open for hands.','USE CROWBAR ON POD. Twice. Eat a seed in between if you\'re sliding.'],
+ ['fight-seeds',()=>S.turned&&S.fight.light&&S.f.bellRung&&S.fight.proof>=2&&S.fight.right>=3,['crater'],'Everything\'s in place. What did you do at the elevator?','USE SUNFLOWER SEEDS ON MOTHER.'],
+ ['wait',()=>S.ready&&!S.turned,['room6'],'The meeting\'s in. If your NOTES look complete, go stand at the window in Room 6 and WAIT.','Room 6. WAIT. Twice, if it warns you and you\'re sure.'],
+ ['vines',()=>!S.f.vinesCleared,['elevator'],'The crowbar was a trap. Who in this town isn\'t bothered by the vines, and what do they like more than pod seeds?','USE SUNFLOWER SEEDS ON VINES. The crows do the rest.'],
+ ['pod',()=>!has('sample')&&!has('solvent')&&!S.f.mural,['greenhouse','field'],'Ochieng wants a live one off the fence. Gloved.','TAKE POD in the soybean field, then USE POD ON OCHIENG.'],
+ ['solvent',()=>has('sample')&&!has('solvent'),['greenhouse'],'She said she needed a fence pod. You have one.','USE POD ON OCHIENG, or TALK OCHIENG and offer it.'],
+ ['mural',()=>has('solvent')&&!S.f.mural,['townhall'],'What\'s the paint stripper for? What in town has been painted over?','USE SOLVENT ON MURAL in the town hall.'],
+ ['ada',()=>S.f.mural&&!S.f.adaDone,['townhall'],'Ada can see the wall now. Ask her again.','TALK ADA → Ask about 1934.'],
+ ['keys',()=>!has('keys'),['exam','truck'],'Cal doesn\'t think he\'ll be needing his truck.','TALK CAL → Ask about his truck.'],
+ ['doc',()=>!S.f.docDone,['waiting'],'Doc keeps mentioning something about his window.','TALK DOC → Ask about the window.'],
+ ['soil',()=>has('soilkit')&&!S.f.soilRead,['field'],'The ground you\'re standing on in the field is the crater\'s edge, and it looks wrong. You\'re carrying a way to find out how wrong.','USE SOIL KIT ON GROUND (or ON CRATER) in the soybean field.'],
+ ['soilkit',()=>!has('soilkit')&&!S.f.soilRead,['shed','field'],'Cal left his kit somewhere out near Ochieng\'s.','TAKE SOIL KIT in the potting shed.'],
+ ['catwalk',()=>S.f.vinesCleared&&!S.calls.catwalk,['elevator','catwalk'],'The ladder\'s clear. The catwalk has the best bars in town.','GO UP at the elevator, then CALL SCULLY.'],
+ ['crows',()=>!S.f.lookedCrows,['field'],'Look harder at who\'s eating out here and who isn\'t.','LOOK CROWS in the field.'],
+ ['photos',()=>!S.f.lookedPhotos,['farmhouse'],'The Hallorans have a hundred years on their wall.','LOOK PHOTOS in the farmhouse.'],
+ ['north',()=>!S.f.triedCrater,['field'],'Have you actually tried the path to the crater?','GO NORTH from the field. You\'ll be turned back. That\'s the point.'],
+ ['rope',()=>!has('rope')&&!S.f.bellRung,['vestry','steeple','townhall'],'Ada\'s grandfather rang a bell. Somebody took the rope down.','TAKE ROPE in the vestry.'],
+ ['bell',()=>has('rope')&&!S.f.bellRung,['steeple','vestry'],'You\'ve got the rope. The bell\'s got a hook. The mural had a sky full of birds.','GO UP to the steeple, USE ROPE ON BELL. Before you WAIT.'],
+ ['crowbar',()=>!has('crowbar'),['elevator','shed'],'Ochieng said the pods don\'t open for hands. Something at the elevator would.','TAKE CROWBAR at the elevator base. Don\'t use it on the vines.'],
+ ['rooted',()=>S.rooted>=2,[],'You\'ve been sitting down inside. What made you feel like yourself when you picked it up?','EAT SEEDS. Each one takes a point off the meter.'],
+ ['pouch',()=>S.seeds<12,['parkinglot'],'The pouch is light. The machine never runs out.','USE MACHINE in the parking lot.'],
+];
+function hint(){const live=HINTS.filter(x=>x[1]());
+  if(!live.length)return say('No hints left. Whatever\'s next, you already know it.','sys');
+  let pick=live.find(x=>x[2].includes(S.room))||live[0];
+  const [key,,,soft,hard]=pick;
+  const lvl=S.hintKey===key?Math.min((S.hintLvl||0)+1,1):0;S.hintKey=key;S.hintLvl=lvl;
+  say((lvl?'Fine. Straight answer: ':'Hint: ')+(lvl?hard:soft)+(lvl?'':'  (HINT again for the straight answer.)'),'sys')}
+/* ===================== CASE NOTES ===================== */
+function notes(){if(S.turned)return say('You left the notebook in the car. The car is on the other side of a hedge.','sys');
+  const ok='✓ ',no='· ';const L=[];const k=S.f;
+  L.push('<b>HALLORAN FARM</b>'+(S.closed.farm?'  ✓':''));
+  L.push((k.lookedCrows?ok:no)+(k.lookedCrows?'the crows on the fence eat the pods and aren\'t sick. They watch my pockets.':'the crows on the fence — what are they eating'));
+  L.push((k.lookedPhotos?ok:no)+(k.lookedPhotos?'photo wall: Emil Rasmussen, 1934. Cal\'s grandfather. "Green Winter."':'the Hallorans\' wall of photos'));
+  L.push((k.triedCrater?ok:no)+(k.triedCrater?'path to the crater is hedged shut. Not for me. Not yet.':'the path north'));
+  L.push('<b>EDGE OF TOWN</b>'+(S.closed.edge?'  ✓':''));
+  L.push((k.vinesCleared?ok:no)+(k.vinesCleared?'elevator ladder cleared — the crows tore the vines for seeds':'elevator ladder is wrapped in vines'));
+  L.push((S.calls.catwalk?ok:no)+'catwalk — bars up there'+(k.soilRead&&!k.salinity?'. Scully needs the salinity strip.':''));
+  if(k.chiselKnown||has('crowbar'))L.push((has('crowbar')?ok:no)+'pods don\'t open for hands — Ochieng used a chisel');
+  if(k.saltKnown)L.push(ok+'Ochieng: 3% brine killed a pod in an hour');
+  L.push('<b>MAIN STREET</b>'+(S.closed.main?'  ✓':''));
+  L.push((k.mural?ok:no)+(k.mural?'the mural: burning field, man in the smoke, a bell, a sky full of birds':k.lookedMural?'something under the paint on the town hall mural':'the town hall mural — painted over'));
+  L.push((k.adaDone?ok:no)+(k.adaDone?'Ada: 1934, they burned it. Emil was hers first — the smoke went home to him. Her grandfather rang the bell. FOR THE BIRDS.':k.adaVague?'Ada won\'t talk about 1934. Yet.':'Miss Ada — the Green Winter'));
+  if(k.bellKnown||has('rope')||k.bellRung)L.push((k.bellRung?ok:no)+(k.bellRung?'the bell is rung. The crows are up.':'the bell — rope\'s been taken down. Ring it before I follow them.'));
+  L.push('<b>CLINIC</b>'+(S.closed.clinic?'  ✓':''));
+  L.push((has('keys')?ok:no)+(has('keys')?'Cal\'s keys. "Don\'t think I\'ll be needing them."':'Cal — his truck is still running out there'));
+  L.push((k.docDone?ok:no)+(k.docDone?'Doc\'s window is stuck open. He doesn\'t mind. That\'s the symptom.':'Doc Amory — perfect vitals, something about a window'));
+  L.push('');L.push('<b>LOOSE</b>');
+  if(k.ochiengMet)L.push((has('sample')||has('solvent')||k.mural?ok:no)+'Ochieng wants a live pod off the fence. Gloved.');
+  if(k.salinity)L.push(ok+'Scully: the strip is inconclusive. '+(k.saltKnown?'Ochieng\'s brine result is the real data — salt kills one; doesn\'t save a town.':'Ask Ochieng what she\'s actually tried on a sample.'));
+  L.push((S.seeds>=12?ok:no)+'seeds: '+S.seeds+(S.seeds<12?' — the machine never runs out':''));
+  say('You flip open the notebook. Your handwriting is worse than usual.','sys');say(L.join('\n'),'sys')}
+/* ===================== THE TURN ===================== */
+function waitCmd(){if(S.turned)return say('You wait. She waits better.','sys');
+  if(!S.ready)return say('You wait. Somewhere a screen door bangs. It\'s a nice night. Waiting feels good, which is exactly why you stop.');
+  if(S.room!=='room6')return say('Not here. Room 6 — the window faces the town hall.','sys');
+  const need=[];if(!has('rope')&&!S.f.bellRung)need.push('the bell rope');if(!has('crowbar'))need.push('anything to pry with');if(!has('keys'))need.push('Cal\'s keys');
+  say('You stand at the window and take stock, the way you do before a door. Pockets: '+(S.inv.length?S.inv.map(i=>ITEMS[i].n).join(', ').toLowerCase():'nothing')+'.'+(need.length?' You notice what you don\'t have: '+need.join(', ')+'. Ada\'s grandfather rang a bell. Ochieng said the pods don\'t open for hands. You could still go back for things. Or you could WAIT again and let the night come.':' You\'ve got what you\'ve got, and it\'s enough to be going on with.'));
+  if(S.rooted>=2)say('And something else: you\'ve been sitting down all evening, in a way that has nothing to do with chairs. Whatever helps with that, do it before you go. Or WAIT again and go as you are.');
+  if((need.length||S.rooted>=2)&&!S._warned){S._warned=true;return}
+  theTurn()}
+function closeAt(k,note){S._closeRoom[k]=S.room;S._notes[k]=note;if(R[S.room].cl!==k){S._left[k]=true;sys(note);delete S._notes[k]}}
+function checkSpokes(){if(S.turned||S.ended)return;
+  if(!S.closed.main&&S.f.mural&&S.f.adaDone){S.closed.main=true;closeAt('main','(Main Street goes quiet behind you. Ada\'s card table is empty when you look back.)')}
+  if(!S.closed.clinic&&has('keys')&&S.f.docDone){S.closed.clinic=true;closeAt('clinic','(The clinic\'s lights click off behind you, one room at a time.)')}
+  if(!S.closed.edge&&S.f.vinesCleared&&S.calls.catwalk){S.closed.edge=true;closeAt('edge','(Whatever else there is to learn out here, it isn\'t on the catwalk.)')}
+  if(!S.closed.farm&&S.f.lookedCrows&&S.f.lookedPhotos&&S.f.triedCrater){S.closed.farm=true;closeAt('farm','(Behind you, the Hallorans\' porch light goes out. It\'s the first light in town to.)')}
+  ui();if(spokes()===4&&!S.ready){S.ready=true;S._closeRoom.ready=S.room;cut('7:58. Up and down Main Street, porch doors open and people step out and start walking, unhurried, toward the town hall. Nobody\'s in a rush. Nobody looks back.');sys('(The meeting is starting. Whatever you still need, get it now — once it lets out there\'s no coming back for anything. When you\'re ready, go to Room 6 and WAIT.)')}}
+function theTurn(){S.turned=true;S.act=3;S.room='room6';S.mode='cut';
+  cut('— midnight —');
+  cut('You wait a long time. You don\'t remember it passing. Then the town hall doors are opening across the road.');
+  cut('They come out single file. Unhurried. Nobody talking. Denise first, then Pruitt with his hat in his hands, the Hallorans, Ada with her purse, Doc, the pastor. Cal, near the front, barefoot, smiling like a man walking to a lake. They pass under the motel light and every one of them looks in at your window and every one of them is glad you\'re here.');
+  cut('They turn east, toward the farm.');
+  const opts=[];
+  if(has('rope')&&!S.f.bellRung){cut('The steeple is right there, black against the sky, full of birds. The rope is in your hand.');opts.push(['Ring the bell first',()=>{cut(ringBell());cut('Then you run.');return null}])}
+  if(!has('seeds')||S.seeds<12){give('seeds');S.seeds=Math.max(S.seeds,0)+12;S.f.vend=(S.f.vend||0)+1;ui();cut('You go out past the machine. You don\'t decide to; your hand just does it — a dollar and a quarter, the coil turning for the longest three seconds of your life, a fresh pouch. You stuff it in your jacket. Habit. Habits are the last thing she takes.')}
+  if(!opts.length)return turnFollow();
+  S._talking=null;S.mode='cut';S.opts=[...opts,['Follow them',()=>{turnFollow();return null}]];
+  S._turnOpts=true;showOpts();
+}
+function turnFollow(){S._turnOpts=false;S.turnedIn=true;S.mode='play';cut('You follow. At the field the vines across the path part for them — not for you, for them, the way a hedge lets a gardener in — and you slip in behind the last one before they close.');
+  cut('Your phone: NO SERVICE. The map in your head goes gray. Whatever you\'re carrying is what you\'ve got.'+(has('seeds')?' You check the pouch by feel: '+(S.seeds>=10?'a decent fistful of seeds.':S.seeds+' seed'+(S.seeds===1?'':'s')+'. Light. You should have hit the machine.'):' Your jacket pocket is empty. No seeds. That feels like a mistake.'));
+  S.room='crater';S.visits.crater=1;ui();checkpoint=snapshot();try{localStorage.setItem(KEY+'.crater',checkpoint)}catch(e){}look()}
+
+/* ===================== SAVE / LOAD ===================== */
+const KEY='bellwether.save.v1';
+function snapshot(){const {opts,...rest}=S;return JSON.stringify(rest)}
+function autosave(){try{if(S.ended)localStorage.removeItem(KEY);else if(S.mode!=='cut')localStorage.setItem(KEY,snapshot())}catch(e){}}
+function loadSnap(str){const o=JSON.parse(str);if(!o||!o.room||!R[o.room])throw 0;S=Object.assign(fresh(),o);S.opts=[];S._talking=null;S._turnOpts=false;
+  if(S.mode==='dialogue'||S.mode==='cut')S.mode='play';
+  if(S.turned&&!S.turnedIn){S._replayTurn=true;S.turned=false;S.ready=true;S.act=2;S.room='room6'}
+  if(S.fight){S.fight.fireArmed=false;S.fight.saltArmed=false}}
+function saveCode(){const b=btoa(unescape(encodeURIComponent(snapshot())));say('Save code (copy it somewhere; type LOAD and paste it to resume):','sys');say(b,'sys')}
+function loadCode(code){try{loadSnap(decodeURIComponent(escape(atob(code.trim()))));log.innerHTML='';anchorY=null;sys('(loaded)');ui();if(S._replayTurn){S._replayTurn=false;theTurn()}else look()}catch(e){say('That code didn\'t take. Check you copied the whole thing.','sys')}}
+/* ===================== COMMANDS ===================== */
+function look(target){const r=R[S.room];
+  if(!target){say(r.name,'title');say(r.d());
+    const ch=present(r);
+    const ex=Object.keys(r.exits||{});if(ex.length)say('Exits: '+ex.map(e=>e.toUpperCase()).join(', ')+(r.car&&!S.turned?'   ·   Car: GO [place]':'')+(ch.length?'   ·   Here: '+ch.map(c=>C[c].n).join(', '):''),'exits');
+    else if(S.room==='crater')say('Exits: none.   ·   Here: the Mother (and Cal, inside her)','exits');return}
+  const t=target.toLowerCase();
+  const id=itemId(t);if(id&&has(id))return say(ITEMS[id].d());
+  if(id&&(r.items||[]).includes(id))return say(ITEMS[id].d());
+  for(const c of(r.chars||[]))if(t.includes(C[c].n.toLowerCase().replace('the ','').split(' ').pop())||C[c].n.toLowerCase().includes(t)){let v=r.look&&r.look[c];while(typeof v==='function')v=v();return say(v||'You look at '+C[c].n+'. They look pleasant. It doesn\'t help.')}
+  if(r.look)for(const k in r.look)if(t===k||t.includes(k)||k.includes(t)){let v=r.look[k];while(typeof v==='function')v=v();return say(v)}
+  if(t==='vines'||t==='vine')return say('Green. Warm-looking. Everywhere, lately.');
+  say('Nothing about that is worth the flashlight.','sys')}
+function go(dir){const r=R[S.room];const from=S.room;dir=dir.toLowerCase().replace(/^to /,'');const map={n:'north',s:'south',e:'east',w:'west',u:'up',d:'down'};dir=map[dir]||dir;
+  const cl=Object.keys(CL).find(k=>CL[k].toLowerCase().includes(dir)||k===dir||(dir.includes('clinic')&&k==='clinic')||(dir.includes('farm')&&k==='farm')||(dir.includes('motel')&&k==='hub'));if(cl)return drive(cl);
+  if(!r.exits||!(dir in r.exits)){if(S.room==='crater')return say('There\'s no way out. She saw to that.','sys');return say('You can\'t go that way. The exits are listed.','sys')}
+  let to=r.exits[dir];if(typeof to==='function')to=to();
+  if(!to||!R[to])return say(to||'Blocked.');
+  S.room=to;S.visits[to]=(S.visits[to]||0)+1;{const back=S.room;S.room=from;leaveRoom();S.room=back}if(R[to].onEnter)R[to].onEnter();ui();look()}
+function drive(cl){const r=R[S.room];if(S.turned)return say('There\'s no car. There\'s no road. There\'s her.','sys');
+  if(r.cl===cl)return say('You\'re already here.','sys');
+  leaveRoom();cut((r.car?'':'You walk back to the car. ')+'You drive. Every porch light in Bellwether is on. Every window is open.');S.room=ENTRY[cl];S.visits[S.room]=(S.visits[S.room]||0)+1;if(R[S.room].onEnter)R[S.room].onEnter();ui();look()}
+function take(w){const r=R[S.room];const id=itemId(w);
+  if(r.take&&r.take[w.toLowerCase()])return say(r.take[w.toLowerCase()]());
+  if(id==='sample'&&r.take&&r.take.pod)return say(r.take.pod());
+  if(!id)return say('You can only TAKE things written in CAPITALS.','sys');
+  if(has(id))return say('You\'ve got it.','sys');
+  if(id==='rope'&&S.f.bellRung)return say('It\'s on the bell now, where it belongs.','sys');
+  if(!(r.items||[]).includes(id))return say('It isn\'t here.','sys');
+  give(id);const lines={seeds:'You pocket the pouch. You feel more like yourself immediately, which is worrying.',crowbar:'Got it. Heavier than it looks.',photograph:()=>!here('ada')?'The case isn\'t locked. Nobody\'s here to mind.':'Ada lifts the case lid for you without being asked. "Bring it back," she says, and doesn\'t sound like she means it.',rope:'You lift the coil off its nail. Dust comes with it. It\'s a good rope. It\'s waited ninety years to be put back.',lighter:'You pocket the lighter. Leave the cigarettes. Somebody should.',soilkit:'Cal\'s kit. His initials on the case.',salt:'Forty pounds. You get it to the car in two trips.'};const ln=lines[id];say(typeof ln==='function'?ln():(ln||'Taken.'))}
+function use(a,b){const r=R[S.room];const id=itemId(a);
+  if(a==='hands')return say(S.room==='crater'?'Not with your hands. They don\'t open for hands, and you know what touching her costs.':'Not with your hands.','sys');
+  if(!id){const t=a.toLowerCase();if(r.use&&r.use[t]){const o=r.use[t]();if(o)say(o);return}return say('USE an item you\'re carrying, or USE [ITEM] ON [thing].','sys')}
+  if(id==='hands'||!has(id))return say(a==='hands'?'Not with your hands. They don\'t open for hands, and you\'ve learned what touching her costs.':'You don\'t have that.','sys');
+  if(!b){if(id==='seeds'&&S.seeds<=0)return say('The pouch is empty. The machine in the motel lot never runs out.');
+    if(id==='seeds'){
+      if(S.rooted>0){if(S.seeds<=0)return say('The pouch is empty.');if(S.turned&&S.seeds<=10&&!S.fight.eatWarned){S.fight.eatWarned=true;return say('You could eat one. You\'d feel like yourself. But the pouch is at the line — go under and there won\'t be enough to interest the birds. Salt and fire don\'t care how many seeds you have. Eat again if you mean it.')}
+        if(S.seeds<=0)return say('The pouch is empty.');
+        S.seeds--;S.rooted--;ui();return say('You eat a sunflower seed. Salt, shell, the small ugly work of your own teeth. It\'s the least pleasant thing that\'s happened to you all night and you feel, distinctly, like yourself again.'+(S.turned?' One fewer for the birds.':''))}
+      if(S.turned)return say('You don\'t. Not one. Every seed in that pouch is spoken for.');
+      if(S.seeds>12){S.seeds--;ui();return say('You eat a sunflower seed. It helps. It doesn\'t help.')}return say('You shake the pouch. About a dozen. You leave them — some part of you is saving these for something, and it isn\'t telling the rest of you what.')}
+    if(id==='lighter')return say('You flick it. A little flame. The whole town seems to lean away from it.');
+    return say('On what?','sys')}
+  b=b.toLowerCase().replace(/^the /,'');
+  if(r.use)for(const k in r.use)if(b===k||b.includes(k)||k.includes(b)){const out=r.use[k](id);if(out!==null){if(out)say(out);return}}
+  const bid=itemId(b);if(bid&&has(bid))return say('You put one thing against the other thing. Nothing about the world changes.','sys');
+  say('That doesn\'t do anything here.','sys')}
+function talk(w){const r=R[S.room];w=(w||'').toLowerCase();
+  const ch=present(r);
+  let c=ch.find(c=>C[c].n.toLowerCase().includes(w)||w.includes(c)||(w==='cal'&&c==='cal'));
+  if(!w&&ch.length===1)c=ch[0];
+  if(!c)return say(ch.length?'Talk to whom? '+ch.map(c=>C[c].n).join(' or ')+'.':'Nobody here to talk to. That\'s new, for Bellwether.','sys');
+  S._talking=c;if(c==='mother'){const f=fightOptions();say(f.m);S.opts=f.o;S.mode='dialogue';return showOpts()}
+  S.opts=C[c].talk();S.mode='dialogue';showOpts()}
+function showOpts(){log.querySelectorAll('p.opt').forEach(el=>el.classList.add('off'));S._menu=(S._menu||0)+1;const id=S._menu;S.opts.forEach(([t,fn,note],i)=>say((i+1)+'. '+t+(note?'  ('+note+')':''),fn?'opt':'opt off',fn?()=>{if(S._menu===id&&S.opts.length)choose(i+1)}:null))}
+function choose(n){const o=S.opts[n-1];if(!o)return say('Pick a number.','sys');if(!o[1])return say('Not yet. Use the verb bar.','sys');
+  say(o[0],'you');const out=o[1]();if(out)say(out);if(!S.turned)checkSpokes();if(S.ended){S.mode='end';S.opts=[]}else if(S._talking===null&&S.mode==='dialogue'&&!S._turnOpts){S.mode='play';S.opts=[]}else if(S._turnOpts&&!S.turnedIn){S.opts=S.opts.filter(x=>x!==o);if(S.opts.length>1){S.mode='cut';showOpts()}else{S._turnOpts=false;turnFollow()}}else if(S.mode==='dialogue'&&!S.ended){S.opts=refreshOpts();if(S.opts.length){sys('(pick another number, or type a command)');showOpts()}else S.mode='play'}else{S.mode='play';S.opts=[]}after()}
+function refreshOpts(){const r=R[S.room];const c=S._talking;if(!c||!present(r).includes(c))return[];if(c==='mother'){const f=fightOptions();say(f.m);return f.o}return C[c].talk()}
+function call(){const r=R[S.room];if(S.turned)return say('NO SERVICE. Just those two words, and a little X.','sys');
+  if(!r.signal)return say('No bars. Something high up would help.','sys');
+  S.calls[S.room]=(S.calls[S.room]||0)+1;S.scully=(S.scully||0)+1;
+  if(S.f.soilRead&&!S.f.salinity){S.f.salinity=true;return say('One ring. "Talk."\n\nYou read her the strip — the salinity strip, the one that went a color the chart stops before.\n\n"Then it\'s inconclusive. A field kit isn\'t built for whatever that is, Mulder; it\'s telling you it doesn\'t know, which is the most honest thing anyone in that town has said to you." A pause full of road. "Whatever they leak, the ground doesn\'t like it. That\'s all you\'ve got from the strip." '+(S.f.saltKnown?'You tell her about Ochieng\'s jar, the brine, fifty minutes. "Then that\'s your data. Salt water kills one. Good. That\'s how you kill one, Mulder; it isn\'t an answer for what to do with a town."':'"Has the botanist actually tried anything on a sample? Ask her. One observed result is worth ten of my guesses from a rental car."')+'')}
+  const legs=['Two rings. "Mulder." Road noise. "I\'m in Idaho. I think. What is it."\n\nYou describe the pods on the fence. The split seam, the size, the warmth.\n\n"That\'s not a plant, Mulder. That\'s a seed case. Seed cases don\'t open by themselves. Something opens them — heat, light, a vector." A pause. "Don\'t be the vector."',
+    '"Three hours out. Two. There\'s a cow on the road, Mulder, an actual cow, and it won\'t —" The line fizzes. "— if you\'ve got a soil reading I want it. If you don\'t, get one."',
+    'One bar. Half a bar. "Mulder —" Wind. "— the road\'s closed, they\'ve got a sign up, I\'m going around, listen to me —" The line stutters. "— they\'re not from here, are they. Mulder. Don\'t go in the field. Mulder, don\'t go in the —"\n\nNothing. You look at the phone. It looks back.',
+    'Straight to voicemail. Her voice, calm, recorded: you\'ve reached Dana Scully. You don\'t leave a message.'];
+  say(legs[Math.min(S.scully-1,legs.length-1)])}
+function inventory(){if(!S.inv.length)return say('Empty pockets. Just you.','sys');say('You\'re carrying: '+S.inv.map(i=>'{'+ITEMS[i].n+'}'+(i==='seeds'?' ('+S.seeds+')':'')).join(', ')+'.')}
+function mapCmd(){say('Five places: '+Object.values(CL).join(' · ')+'. Type GO [place] or DRIVE [place] to drive there, or click a place on the map panel.','sys')}
+function after(){S.turns++;if(!S.turned&&S.turns%8===0&&has('seeds')&&S.seeds>12){S.seeds--;if(S.turns%16===0)sys('(You eat a sunflower seed without noticing.)')}checkSpokes();ui();autosave()}
+
+function handle(raw){const s=raw.trim();if(!s)return;
+  if(S.mode==='end'){const V=s.toUpperCase();if(V==='CRATER')return backToCrater();if(V==='RESTART')return start(true);return}
+  say(s,'you');
+  if(S.mode==='dialogue'||S.mode==='cut'){const n=parseInt(s);if(!isNaN(n))return choose(n);const V0=s.split(/\s+/)[0].toUpperCase();if(S.mode==='cut'&&!['LOAD','RESTART','SAVE','HELP'].includes(V0))return say('Pick a number.','sys');if(S.mode!=='cut'){S.mode='play';S.opts=[]}}
+  const [v,...rest]=s.split(/\s+/);const V=v.toUpperCase();const arg=rest.join(' ');
+  switch(V){
+    case 'LOOK':case 'L':case 'EXAMINE':case 'X':look(arg.replace(/^at /i,''));break;
+    case 'GO':case 'WALK':go(arg);break;
+    case 'READ':look(arg);break;
+    case 'EAT':if(/seed/i.test(arg)||!arg)use('seeds');else say('You don\'t eat that. Even tonight.','sys');break;
+    case 'CLIMB':go(/down/i.test(arg)?'down':'up');break;
+    case 'OPEN':case 'PRY':if(/pod/i.test(arg)&&S.room==='crater')use(has('crowbar')?'crowbar':'hands',arg);else if(/machine/i.test(arg))use('machine');else say('With what? USE [ITEM] ON '+(arg||'[thing]').toUpperCase()+'.','sys');break;
+    case 'TURN':case 'SWITCH':if(/light/i.test(arg)&&has('keys'))use('keys','truck');else if(/light/i.test(arg))say('You\'d need the keys.','sys');else say('That word isn\'t on the bar. The town\'s the puzzle, not the parser.','sys');break;
+    case 'RING':use(has('rope')?'rope':'hands','bell');break;
+    case 'FEED':use('seeds',arg.replace(/^the /i,'')||'crows');break;
+    case 'N':case 'S':case 'E':case 'W':case 'U':case 'D':case 'NORTH':case 'SOUTH':case 'EAST':case 'WEST':case 'UP':case 'DOWN':go(V);break;
+    case 'TAKE':case 'GET':take(arg);break;
+    case 'USE':{const m=arg.match(/^(.+?)\s+on\s+(.+)$/i);if(m)use(m[1],m[2]);else use(arg);break}
+    case 'TALK':talk(arg.replace(/^to /i,''));break;
+    case 'CALL':call();break;
+    case 'INVENTORY':case 'I':case 'INV':inventory();break;
+    case 'MAP':mapCmd();break;
+    case 'DRIVE':{if(!arg){say('Five places on the map: '+Object.values(CL).join(' · ')+'. DRIVE [place] or GO [place].','sys');break}go(arg);break}
+    case 'SAVE':saveCode();break;
+    case 'LOAD':if(arg)loadCode(arg);else say('LOAD [paste your save code]. If you opened this file in your own browser, progress also saves itself.','sys');break;
+    case 'RESTART':start(true);break;
+    case 'CRATER':backToCrater();break;
+    case 'WAIT':case 'Z':waitCmd();break;
+    case 'BELIEVE':say(S.turned?'You do. That was never the problem.':'You want to. That\'s on the poster. It\'s also, tonight, the whole problem — everybody in this town believes something right now and it\'s making them very, very calm.');break;
+    case 'NOTES':case 'CASE':case 'FILE':notes();break;
+    case 'HINT':hint();break;
+    case 'HELP':say('LOOK · GO [n/s/e/w/up/down] · TAKE [ITEM] · USE [ITEM] ON [thing] · TALK [person] · CALL SCULLY (where there\'s signal) · INVENTORY · MAP. Things in CAPITALS can be taken. NOTES opens Mulder\'s case file; HINT nudges (twice for a straight answer). WAIT at Room 6 once the meeting starts to let the night come. SAVE gives you a code, LOAD [code] restores it, RESTART starts over, CRATER jumps back to midnight once you\'ve reached it. Opened in your own browser, the game also autosaves.','sys');break;
+    default:say('That word isn\'t on the bar. The town\'s the puzzle, not the parser.','sys')}
+  after()}
+
+/* ===================== UI ===================== */
+function ui(){const r=R[S.room];
+  {const ch=present(r);
+   const ex=Object.keys(r.exits||{});
+   let s='<b>'+r.name.toUpperCase()+'</b>';
+   s+='  ·  Exits: '+(ex.length?ex.map(e=>e.toUpperCase()).join(', '):'none')+(r.car&&!S.turned?' · car':'');
+   if(ch.length)s+='  ·  Here: '+ch.map(c=>C[c].n).join(', ');
+   if(S.ready&&!S.turned)s+='  ·  <span class="g">the meeting is in — WAIT at Room 6</span>';
+   $('#statusline').innerHTML=S.ended?'<b>— END —</b>':s;}
+  $('#inv').innerHTML=S.inv.map(i=>'<li>'+ITEMS[i].n+(i==='seeds'?' <small>×'+S.seeds+'</small>':'')+'</li>').join('')||'<li><small>nothing</small></li>';
+  $('#seedstat').textContent='seeds '+S.seeds;
+  $('#sig').textContent=S.turned?'📵 NO SERVICE':(r.signal?'📶 signal':'📵 no signal');
+  const clock=$('#clock');clock.textContent=S.turned?'12:00 AM — the field':['4:10 PM','6:25 PM','7:40 PM','7:58 PM — the meeting','8:00 PM — the meeting'][spokes()];
+  const m=$('#map');m.className=S.turned?'grey':'';
+  m.innerHTML=Object.keys(CL).map(cl=>{const rooms=Object.keys(R).filter(k=>R[k].cl===cl);const canDrive=!S.turned&&r.cl!==cl;
+    return '<div class="cl"><span class="n '+(r.cl===cl?'here':'')+(canDrive?' drive':'')+'" data-cl="'+cl+'">'+CL[cl]+(S.closed[cl]?' ✓':'')+'</span><div class="rooms">'+rooms.map(k=>'<span class="'+(k===S.room?'here':(k==='crater'&&!S.turned?'locked':''))+'">'+(k==='crater'&&!S.turned?'▒▒▒▒':R[k].name.replace(/^.*— /,''))+'</span>').join(' · ')+'</div></div>'}).join('');
+  m.querySelectorAll('.drive').forEach(el=>el.addEventListener('click',()=>{say('drive to '+CL[el.dataset.cl],'you');drive(el.dataset.cl);after()}));
+  const rt=$('#rooted');rt.style.display='block';rt.querySelector('.lbl').textContent='Rooted';rt.querySelectorAll('i').forEach((b,i)=>b.classList.toggle('on',i<S.rooted));
+  document.querySelector('[data-v="CALL SCULLY"]').disabled=!(r.signal&&!S.turned);}
+const VERBS=['LOOK','GO','DRIVE','TAKE','USE','TALK','CALL SCULLY','WAIT','NOTES','HINT','INVENTORY','MAP','HELP','RESTART'];
+$('#verbs').innerHTML=VERBS.map(v=>'<button class="v" data-v="'+v+'">'+v+'</button>').join('');
+document.querySelectorAll('button.v[data-v]').forEach(b=>b.addEventListener('click',()=>{const v=b.dataset.v;
+  if(v==='INVENTORY'||v==='MAP'||v==='CALL SCULLY'||v==='LOOK'||v==='DRIVE'||v==='WAIT'||v==='NOTES'||v==='HINT'||v==='HELP'){handle(v);input.focus();return}
+  if(v==='RESTART'){input.value=v;input.focus();say('Press Enter to start over from the beginning.','sys');return}
+  input.value=v+' ';input.focus()}));
+input.addEventListener('keydown',e=>{if(e.key==='Enter'){if(typing){skip=true;}const v=input.value;input.value='';handle(v)}});
+$('#restart').addEventListener('click',()=>start(true));$('#crater').addEventListener('click',backToCrater);
+
+function start(forceNew){log.innerHTML='';anchorY=null;log.scrollTop=0;$('#restart').style.display='none';$('#crater').style.display='none';input.disabled=false;queue=[];skip=false;
+  if(!forceNew){let saved=null;try{saved=localStorage.getItem(KEY)}catch(e){}
+    if(saved){try{loadSnap(saved);sys('(Resumed. Type RESTART to begin again.)');ui();if(S._replayTurn){S._replayTurn=false;theTurn()}else look();input.focus();return}catch(e){}}}
+  S=fresh();checkpoint=null;try{localStorage.removeItem(KEY);localStorage.removeItem(KEY+'.crater')}catch(e){}
+  say('BELLWETHER, OREGON. POP. 1,200.','title');
+  cut('You are Fox Mulder.');
+  cut('Last Thursday, a meteorite came down in the Hallorans\' soybean field. The Gazette ran a cute story. Friday, county extension agent Cal Rasmussen drove out to look at "unusual growth" and didn\'t come home. His truck is still running.');
+  cut('Scully\'s flight got grounded in Salt Lake. She\'s renting a car. "Nine hours, Mulder. Do NOT touch anything."');
+  cut('It is Tuesday. It\'s a nice night. Everyone keeps saying so.');
+  sys('Things in CAPITALS can be taken. GO [direction] to walk, GO [place] to drive. NOTES for the case file. Type HELP anytime.');
+  S.visits.room6=1;ui();look();input.focus()}
+start();
+</script>
+</body>
+</html>
