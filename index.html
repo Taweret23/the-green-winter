@@ -515,7 +515,7 @@ function theTurn(){S.turned=true;S.act=3;S.room='room6';S.mode='cut';
   cut('They turn east, toward the farm.');
   const opts=[];
   if(has('rope')&&!S.f.bellRung){cut('The steeple is right there, black against the sky, full of birds. The rope is in your hand.');opts.push(['Ring the bell first',()=>{cut(ringBell());cut('Then you run.');return null}])}
-  if(!has('seeds')||S.seeds<12){give('seeds');S.seeds=Math.max(S.seeds,0)+12;S.f.vend=(S.f.vend||0)+1;ui();cut('You go out past the machine. You don\'t decide to; your hand just does it — a dollar and a quarter, the coil turning for the longest three seconds of your life, a fresh pouch. You stuff it in your jacket. Habit. Habits are the last thing she takes.')}
+  if(!has('seeds')||S.seeds<14){give('seeds');S.seeds=Math.max(S.seeds,0)+12;S.f.vend=(S.f.vend||0)+1;ui();cut('You go out past the machine. You don\'t decide to; your hand just does it — a dollar and a quarter, the coil turning for the longest three seconds of your life, a fresh pouch. You stuff it in your jacket. Habit. Habits are the last thing she takes.')}
   if(!opts.length)return turnFollow();
   S._talking=null;S.mode='cut';S.opts=[...opts,['Follow them',()=>{turnFollow();return null}]];
   S._turnOpts=true;showOpts();
